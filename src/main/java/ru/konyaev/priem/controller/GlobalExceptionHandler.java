@@ -120,6 +120,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("Метод " + ex.getMethod() + " не поддерживается для данного пути", HttpStatus.METHOD_NOT_ALLOWED.value()));
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("Ресурс не найден: " + ex.getResourcePath(), HttpStatus.NOT_FOUND.value()));
+    }
+
     /**
      * Предотвращает возникновение любых необработанных 500 ошибок в API.
      */

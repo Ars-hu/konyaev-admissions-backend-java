@@ -18,7 +18,7 @@ public class FrontendController {
     /**
      * Гарантированная выдача корректного swagger-initializer.js для работы Swagger UI
      * через обратный прокси Nginx (/swagger-ui/ и /java/swagger-ui/).
-     * Предотвращает ошибку "No API definition provided".
+     * Предотвращает ошибки "No API definition provided" и YAMLException (validatorUrl: null).
      */
     @GetMapping(value = {"/swagger-ui/swagger-initializer.js", "/java/swagger-ui/swagger-initializer.js"}, produces = "application/javascript;charset=UTF-8")
     @ResponseBody
@@ -27,7 +27,6 @@ public class FrontendController {
             window.onload = function() {
               var isJava = window.location.pathname.indexOf('/java') === 0;
               var docUrl = isJava ? '/java/v3/api-docs' : '/v3/api-docs';
-              var cfgUrl = isJava ? '/java/v3/api-docs/swagger-config' : '/v3/api-docs/swagger-config';
 
               window.ui = SwaggerUIBundle({
                 url: docUrl,
@@ -41,8 +40,7 @@ public class FrontendController {
                   SwaggerUIBundle.plugins.DownloadUrl
                 ],
                 layout: "StandaloneLayout",
-                configUrl: cfgUrl,
-                validatorUrl: "",
+                validatorUrl: null,
                 displayRequestDuration: true,
                 operationsSorter: "alpha",
                 tagsSorter: "alpha"
