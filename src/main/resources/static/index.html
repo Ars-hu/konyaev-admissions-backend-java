@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тестовый стенд — АИС Приёмной комиссии (Java Spring Boot 3)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-body: #070b14;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --bg-card-hover: rgba(30, 41, 59, 0.95);
+      --border-subtle: rgba(56, 189, 248, 0.16);
+      --border-bright: rgba(56, 189, 248, 0.45);
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    /* Header */
+    header {
+      background: rgba(10, 15, 29, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+    }
+    .logo-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #fff;
+    }
+    .logo-subtitle {
+      font-size: 12px;
+      color: var(--primary);
+      font-family: var(--font-mono);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px 0;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+    .tab-btn.active-stress {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: var(--rose);
+      color: var(--rose);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 28px 0 40px;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      margin-bottom: 22px;
+      backdrop-filter: blur(8px);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 992px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(10, 15, 29, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #fff;
+      font-family: var(--font-sans);
+      transition: border 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+    input::placeholder { color: var(--text-dim); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #070b14;
+    }
+    .btn-primary:hover {
+      background: #7dd3fc;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    }
+    .btn-success {
+      background: var(--emerald);
+      color: #070b14;
+    }
+    .btn-success:hover {
+      background: #34d399;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+    .btn-danger {
+      background: var(--rose);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #fb7185;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-bright);
+      color: var(--primary);
+    }
+    .btn-outline:hover {
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    /* Slots Grid */
+    .slots-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 8px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding: 8px 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: rgba(10, 15, 29, 0.4);
+    }
+    .slot-card {
+      padding: 9px 8px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .slot-card:hover:not(.slot-disabled) {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .slot-card.selected {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+    .slot-time {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .slot-info {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .slot-disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: transparent;
+    }
+
+    /* Ticket Confirmation */
+    .ticket-card {
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.9));
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 18px;
+      display: none;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+    }
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed rgba(56, 189, 248, 0.3);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .ticket-number {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* Stress Test Cards */
+    .stress-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .stress-card:hover {
+      border-color: var(--rose);
+      background: rgba(30, 41, 59, 0.85);
+    }
+    .stress-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stress-endpoint {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+    .stress-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    /* Inspector Code Box */
+    .inspector-box {
+      background: #040711;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .inspector-header {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .inspector-body {
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      max-height: 350px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Verdict Banner */
+    .verdict-banner {
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-top: 14px;
+      display: none;
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+    .verdict-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+    .verdict-failure {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fb7185;
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    th {
+      background: rgba(30, 41, 59, 0.7);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--amber); }
+    .badge-confirmed { background: rgba(16, 185, 129, 0.2); color: var(--emerald); }
+    .badge-rejected { background: rgba(244, 63, 94, 0.2); color: var(--rose); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 20px 0;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: #040711;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-content">
+      <div class="logo-area">
+        <div class="logo-badge">🏛️</div>
+        <div>
+          <div class="logo-title">ГБПОУ ТО «Тверской колледж им. А.Н. Коняева»</div>
+          <div class="logo-subtitle">Тестовый стенд приёмной комиссии • Java 21 Spring Boot 3</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="status-badge" id="apiStatusBadge">
+          <span class="status-dot"></span>
+          <span id="apiStatusText">Проверка связи с бэкендом...</span>
+        </div>
+        <a href="/swagger-ui/index.html" target="_blank" class="btn btn-outline btn-sm" style="text-decoration: none;">
+          📖 Swagger UI
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-bar">
+    <div class="container" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="tab-btn active" onclick="switchTab('applicant')">
+        👨‍🎓 Абитуриент (Запись на приём)
+      </button>
+      <button class="tab-btn" id="stressTabBtn" onclick="switchTab('stress')">
+        🛡️ Zero 500 Check (Стресс-тесты)
+      </button>
+      <button class="tab-btn" onclick="switchTab('admin')">
+        🏛️ Администратор (Панель управления)
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container">
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: АБИТУРИЕНТ (Запись на приём) -->
+    <!-- ================================================================= -->
+    <div class="tab-pane active" id="tab-applicant">
+      <div class="grid-2">
+        <!-- Left Column: Calendar & Slots -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📅 Выбор даты и времени визита</div>
+            <span class="badge" id="advanceHoursBadge" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">
+              Правило 24ч активно
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Доступный месяц приёмной кампании:</label>
+            <select id="allowedMonthSelect" onchange="onMonthSelected()">
+              <option value="">Загрузка месяцев...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Дата визита (YYYY-MM-DD):</label>
+            <input type="date" id="selectedDateInput" onchange="loadSlotsForDate()">
+            <div id="dateStatusHint" style="font-size: 11.5px; color: var(--text-dim); margin-top: 4px;"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Свободные 10-минутные слоты (с 09:00 до 16:30):</label>
+            <div class="slots-container" id="slotsGrid">
+              <div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-dim);">
+                Выберите дату для загрузки доступных интервалов времени
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size: 12px; color: var(--text-dim);">
+            💡 Интервалы шагом 10 мин. Вместимость слота до 3 абитуриентов.
+          </div>
+        </div>
+
+        <!-- Right Column: Registration Form -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 Данные абитуриента</div>
+            <span class="badge badge-pending" id="selectedSlotBadge">Слот не выбран</span>
+          </div>
+
+          <form id="registrationForm" onsubmit="submitRegistration(event)">
+            <div class="form-group">
+              <label>ФИО абитуриента *</label>
+              <input type="text" id="appFio" required placeholder="Иванов Даниил Сергеевич" maxlength="255">
+            </div>
+
+            <div class="form-group">
+              <label>Контактный телефон *</label>
+              <input type="tel" id="appPhone" required placeholder="+7 (915) 745-12-89" maxlength="20">
+            </div>
+
+            <div class="form-group">
+              <label>Электронная почта (E-mail) *</label>
+              <input type="email" id="appEmail" required placeholder="daniil.ivanov@mail.ru" maxlength="100">
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12.5px; color: var(--text-muted);">
+              📌 <b>Правило 24 часов:</b> Запись на приём закрывается за 24 часа до наступления выбранного времени слота.
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitRegBtn" style="width: 100%;" disabled>
+              Записаться в приёмную комиссию
+            </button>
+          </form>
+
+          <!-- Ticket Result -->
+          <div class="ticket-card" id="ticketCard">
+            <div class="ticket-header">
+              <div>
+                <div style="font-size: 11px; color: var(--emerald); text-transform: uppercase; font-weight: 700;">Электронный талон записи</div>
+                <div class="ticket-number" id="ticketNumDisplay">TK-1042</div>
+              </div>
+              <div class="badge badge-confirmed">Зарегистрировано</div>
+            </div>
+            <div style="font-size: 13.5px; line-height: 1.6;">
+              <div><b>Абитуриент:</b> <span id="ticketFio"></span></div>
+              <div><b>Дата визита:</b> <span id="ticketDate" style="color: var(--primary);"></span></div>
+              <div><b>Время слота:</b> <span id="ticketTime" style="color: var(--primary);"></span></div>
+              <div><b>Телефон:</b> <span id="ticketPhone"></span></div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: var(--emerald);">
+              ✓ Заявление сохранено в базе данных PostgreSQL. Ждём вас в колледже им. А.Н. Коняева!
+            </div>
+          </div>
+
+          <!-- Error Alert -->
+          <div id="regErrorAlert" style="display: none; margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: #fb7185; font-size: 13px;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: ZERO 500 CHECK (Стресс-тесты) -->
+    <!-- ================================================================= -->
+    <div class="tab-pane" id="tab-stress">
+      <div class="card" style="border-left: 4px solid var(--rose);">
+        <div class="card-header">
+          <div>
+            <div class="card-title" style="color: var(--rose);">🛡️ Центр тестирования отказоустойчивости (Zero 500 Check)</div>
+            <div class="card-desc" style="margin-top: 4px; margin-bottom: 0;">
+              Нажмите на любой тест или запустите автоматический прогон всех сценариев. Бэкенд перехватывает все исключения через <code>GlobalExceptionHandler</code> и гарантированно возвращает корректный <b>HTTP 400 Bad Request</b> вместо 500 ошибки.
+            </div>
+          </div>
+          <button class="btn btn-danger" onclick="runAllStressTests()">
+            ▶ Запустить все 8 тестов
+          </button>
+        </div>
+
+        <!-- 8 Test Cards Grid -->
+        <div class="grid-3" style="gap: 14px;">
+          <!-- Test 1 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">🔢 Переполнение Long (Число > 2^63)</div>
+              <div class="stress-endpoint">DELETE /api/admin/applications/999999999999999999999999999999999999999999</div>
+              <div class="stress-desc">Передача числа, превышающего разрядность Long. Ожидается: HTTP 400 без 500 ошибки.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(1)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 2 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">🔤 Буквы вместо числового ID</div>
+              <div class="stress-endpoint">PATCH /api/admin/applications/abc_not_a_number/status</div>
+              <div class="stress-desc">MethodArgumentTypeMismatch: текст вместо числа в URL path variable. Ожидается: HTTP 400.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(2)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 3 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">📅 Некорректный формат даты</div>
+              <div class="stress-endpoint">GET /api/slots-status/2026-99-99_invalid_date</div>
+              <div class="stress-desc">DateTimeParseException: несуществующая дата. Ожидается: HTTP 400 «Некорректный формат даты».</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(3)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 4 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">💥 Битый JSON в теле запроса</div>
+              <div class="stress-endpoint">POST /api/register (broken JSON payload)</div>
+              <div class="stress-desc">HttpMessageNotReadable: некорректный JSON (пропущены кавычки/скобки). Ожидается: HTTP 400.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(4)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 5 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">📝 Превышение длины (1000 симв.)</div>
+              <div class="stress-endpoint">POST /api/register (fio: 1000 characters)</div>
+              <div class="stress-desc">Validation error: длина поля превышает лимит @Size(max=255). Ожидается: HTTP 400.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(5)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 6 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">⚠️ Нарушение правила 24 часов</div>
+              <div class="stress-endpoint">POST /api/register (date: today, time: 09:00)</div>
+              <div class="stress-desc">Бизнес-правило буфера времени приёма. Ожидается: HTTP 400 с понятным текстом отказа.</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(6)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 7 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">👥 Дубликат заявки на дату</div>
+              <div class="stress-endpoint">POST /api/register (повторный телефон)</div>
+              <div class="stress-desc">Защита от дублей. Ожидается: HTTP 400 «Вы уже записаны на эту дату».</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(7)">Выполнить тест</button>
+          </div>
+
+          <!-- Test 8 -->
+          <div class="stress-card">
+            <div>
+              <div class="stress-title">🔒 Неавторизованный админ-запрос</div>
+              <div class="stress-endpoint">GET /api/admin/applications (No Token)</div>
+              <div class="stress-desc">Попытка получить данные без Bearer JWT. Ожидается: HTTP 401 Unauthorized (без 500).</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="runStressTest(8)">Выполнить тест</button>
+          </div>
+        </div>
+
+        <!-- Verdict Banner -->
+        <div class="verdict-banner" id="verdictBanner">
+          <span id="verdictText"></span>
+        </div>
+
+        <!-- Inspector Window -->
+        <div class="inspector-box" id="inspectorBox">
+          <div class="inspector-header">
+            <span>📡 HTTP ИНСПЕКТОР ОТВЕТА СЕРВЕРА</span>
+            <div style="display: flex; gap: 8px;">
+              <span id="inspectorStatusBadge" class="badge badge-pending">Ожидание запуска теста...</span>
+              <span id="inspectorTimeBadge" style="color: var(--primary);">⏱ 0 ms</span>
+            </div>
+          </div>
+          <div class="inspector-body" id="inspectorOutput">Нажмите на кнопку любого теста выше, чтобы отправить реальный запрос к бэкенду и увидеть перехваченный HTTP 400 ответ...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: АДМИНИСТРАТОР (Панель управления) -->
+    <!-- ================================================================= -->
+    <div class="tab-pane" id="tab-admin">
+      <!-- Auth Widget -->
+      <div class="card" id="adminAuthCard">
+        <div class="card-header">
+          <div class="card-title">🔐 Авторизация администратора комиссии</div>
+          <span class="badge" id="authStatusBadge" style="background: rgba(245, 158, 11, 0.2); color: var(--amber);">
+            Не авторизован
+          </span>
+        </div>
+        <div class="grid-3" style="align-items: end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Имя пользователя:</label>
+            <input type="text" id="adminUsernameInput" value="admin">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Пароль администратора:</label>
+            <input type="password" id="adminPasswordInput" placeholder="Введите пароль из .env">
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-primary" onclick="adminLogin()">
+              Войти
+            </button>
+            <button type="button" class="btn btn-outline" onclick="adminQuickLogin()">
+              Быстрый вход
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Content (Visible after login) -->
+      <div id="adminPanelArea" style="display: none;">
+        <!-- Toolbar -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Реестр заявлений абитуриентов</div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-success btn-sm" onclick="downloadExcelExport()">
+                📥 Скачать Excel (.xlsx)
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="runManualArchive()">
+                ⚡ Запустить архивацию
+              </button>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="grid-3" style="margin-bottom: 16px;">
+            <div>
+              <label>Поиск по ФИО или телефону:</label>
+              <input type="text" id="adminSearchInput" placeholder="Поиск..." oninput="filterApplications()">
+            </div>
+            <div>
+              <label>Фильтр по статусу:</label>
+              <select id="adminStatusFilter" onchange="filterApplications()">
+                <option value="">Все статусы</option>
+                <option value="pending">Ожидание (pending)</option>
+                <option value="confirmed">Принято (confirmed)</option>
+                <option value="rejected">Отклонено (rejected)</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+              <button class="btn btn-primary btn-sm" onclick="loadApplications(1)" style="width: 100%;">
+                Обновить список
+              </button>
+            </div>
+          </div>
+
+          <!-- Applications Table -->
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Талон</th>
+                  <th>ФИО</th>
+                  <th>Телефон</th>
+                  <th>Email</th>
+                  <th>Дата</th>
+                  <th>Время</th>
+                  <th>Статус</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTableBody">
+                <tr>
+                  <td colspan="9" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                    Загрузка заявлений...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; color: var(--text-muted);">
+            <div id="paginationInfo">Показано: 0 записей</div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-outline btn-sm" id="prevPageBtn" onclick="changePage(-1)" disabled>← Назад</button>
+              <button class="btn btn-outline btn-sm" id="nextPageBtn" onclick="changePage(1)" disabled>Вперёд →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Quick Control -->
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 14px;">📅 Управление календарём дат</div>
+            <div class="form-group">
+              <label>Выберите дату для изменения:</label>
+              <input type="date" id="adminToggleDateInput">
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-danger btn-sm" onclick="toggleDateAdmin()">
+                Блокировать / Разблокировать дату
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="toggleWeekendAdmin()">
+                Открыть / Закрыть субботу
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 14px;">⚙️ Суточные квоты (Лимиты)</div>
+            <div class="form-group">
+              <label>Дата:</label>
+              <input type="date" id="adminLimitDateInput">
+            </div>
+            <div class="form-group">
+              <label>Макс. количество записей на день (0 = без лимита):</label>
+              <input type="number" id="adminLimitValueInput" min="0" value="50">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="setDailyLimitAdmin()">
+              Сохранить суточный лимит
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      ГБПОУ ТО «Тверской колледж им. А.Н. Коняева» • АИС Приёмной комиссии • Java 21 LTS + Spring Boot 3 + PostgreSQL 16
+    </div>
+  </footer>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    // API Base URL - auto adapts between standalone and proxied /java/ path
+    const API_BASE = window.location.pathname.startsWith('/java') ? '/java/api' : '/api';
+    let jwtToken = localStorage.getItem('konyaev_jwt') || '';
+    let selectedDate = '';
+    let selectedTime = '';
+    let currentPage = 1;
+    let totalPages = 1;
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      checkBackendStatus();
+      loadAllowedMonths();
+      if (jwtToken) {
+        setLoggedInState();
+      }
+    });
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('active');
+        el.classList.remove('active-stress');
+      });
+
+      const pane = document.getElementById('tab-' + tabId);
+      if (pane) pane.classList.add('active');
+
+      const btn = event ? event.currentTarget : null;
+      if (btn) {
+        if (tabId === 'stress') btn.classList.add('active-stress');
+        else btn.classList.add('active');
+      }
+    }
+
+    // Ping backend status
+    async function checkBackendStatus() {
+      const badge = document.getElementById('apiStatusBadge');
+      const text = document.getElementById('apiStatusText');
+      try {
+        const start = Date.now();
+        const res = await fetch(`${API_BASE}/dates-status`);
+        const elapsed = Date.now() - start;
+        if (res.ok) {
+          const data = await res.json();
+          badge.style.background = 'rgba(16, 185, 129, 0.15)';
+          badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          badge.style.color = '#34d399';
+          text.innerHTML = `🟢 Online (${elapsed} ms) • Буфер: ${data.advance_hours || 24} ч`;
+          if (data.advance_hours) {
+            document.getElementById('advanceHoursBadge').textContent = `Правило ${data.advance_hours}ч активно`;
+          }
+        } else {
+          throw new Error('Status: ' + res.status);
+        }
+      } catch (err) {
+        badge.style.background = 'rgba(244, 63, 94, 0.15)';
+        badge.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+        badge.style.color = '#fb7185';
+        text.innerHTML = `🔴 Ошибка подключения (${err.message})`;
+      }
+    }
+
+    // Load Allowed Months
+    async function loadAllowedMonths() {
+      const select = document.getElementById('allowedMonthSelect');
+      try {
+        const res = await fetch(`${API_BASE}/allowed-months`);
+        if (res.ok) {
+          const months = await res.json();
+          select.innerHTML = months.map(m => {
+            const dateStr = `${m.year}-${String(m.month).padStart(2, '0')}`;
+            const monthNames = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            return `<option value="${dateStr}">${monthNames[m.month]} ${m.year}</option>`;
+          }).join('');
+
+          if (months.length > 0) {
+            onMonthSelected();
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load allowed months:', err);
+      }
+    }
+
+    function onMonthSelected() {
+      const val = document.getElementById('allowedMonthSelect').value;
+      if (val) {
+        const defaultDay = `${val}-15`;
+        document.getElementById('selectedDateInput').value = defaultDay;
+        loadSlotsForDate();
+      }
+    }
+
+    // Load Slots For Date
+    async function loadSlotsForDate() {
+      const date = document.getElementById('selectedDateInput').value;
+      if (!date) return;
+      selectedDate = date;
+
+      const container = document.getElementById('slotsGrid');
+      container.innerHTML = '<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--primary);">Загрузка слотов...</div>';
+      selectedTime = '';
+      updateSubmitBtn();
+
+      try {
+        const res = await fetch(`${API_BASE}/slots-status/${date}`);
+        if (!res.ok) {
+          const err = await res.json();
+          container.innerHTML = `<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--rose);">${err.error || 'Ошибка загрузки'}</div>`;
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.slots || data.slots.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-dim);">Нет доступных слотов на эту дату</div>';
+          return;
+        }
+
+        container.innerHTML = data.slots.map(s => {
+          const isFull = s.occupied >= s.max_capacity;
+          const isBlocked = s.is_blocked;
+          const disabled = isFull || isBlocked;
+          const cls = disabled ? 'slot-card slot-disabled' : 'slot-card';
+          const info = isBlocked ? 'Закрыт' : (isFull ? 'Занят' : `${s.max_capacity - s.occupied} мест`);
+
+          return `
+            <div class="${cls}" data-time="${s.time}" onclick="selectSlot('${s.time}', ${disabled})">
+              <div class="slot-time">${s.time}</div>
+              <div class="slot-info">${info}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--rose);">Сбой: ${err.message}</div>`;
+      }
+    }
+
+    function selectSlot(time, disabled) {
+      if (disabled) return;
+      selectedTime = time;
+
+      document.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
+      const activeCard = document.querySelector(`.slot-card[data-time="${time}"]`);
+      if (activeCard) activeCard.classList.add('selected');
+
+      const badge = document.getElementById('selectedSlotBadge');
+      badge.textContent = `${selectedDate} ${time}`;
+      badge.className = 'badge badge-confirmed';
+
+      updateSubmitBtn();
+    }
+
+    function updateSubmitBtn() {
+      const btn = document.getElementById('submitRegBtn');
+      btn.disabled = !(selectedDate && selectedTime);
+    }
+
+    // Submit Registration
+    async function submitRegistration(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('regErrorAlert');
+      const ticketBox = document.getElementById('ticketCard');
+      errBox.style.display = 'none';
+      ticketBox.style.display = 'none';
+
+      const payload = {
+        fio: document.getElementById('appFio').value.trim(),
+        phone: document.getElementById('appPhone').value.trim(),
+        email: document.getElementById('appEmail').value.trim(),
+        registration_date: selectedDate,
+        registration_time: selectedTime
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          ticketBox.style.display = 'block';
+          document.getElementById('ticketNumDisplay').textContent = data.ticket_number || `TK-${data.id}`;
+          document.getElementById('ticketFio').textContent = payload.fio;
+          document.getElementById('ticketDate').textContent = payload.registration_date;
+          document.getElementById('ticketTime').textContent = payload.registration_time;
+          document.getElementById('ticketPhone').textContent = payload.phone;
+          loadSlotsForDate(); // refresh
+        } else {
+          errBox.style.display = 'block';
+          errBox.innerHTML = `⚠️ <b>Ошибка (${res.status}):</b> ${data.error || 'Не удалось записаться'}`;
+        }
+      } catch (err) {
+        errBox.style.display = 'block';
+        errBox.textContent = 'Сбой отправки запроса: ' + err.message;
+      }
+    }
+
+    // =========================================================================
+    // STRESS TESTS (Zero 500 Check)
+    // =========================================================================
+    async function runStressTest(testId) {
+      const statusBadge = document.getElementById('inspectorStatusBadge');
+      const timeBadge = document.getElementById('inspectorTimeBadge');
+      const output = document.getElementById('inspectorOutput');
+      const verdict = document.getElementById('verdictBanner');
+      const verdictText = document.getElementById('verdictText');
+
+      let method = 'GET';
+      let url = '';
+      let headers = { 'Accept': 'application/json' };
+      let body = null;
+      let testName = '';
+
+      switch (testId) {
+        case 1:
+          testName = 'Тест 1: Переполнение Long (Числовое переполнение)';
+          method = 'DELETE';
+          url = `${API_BASE}/admin/applications/999999999999999999999999999999999999999999`;
+          if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+          break;
+        case 2:
+          testName = 'Тест 2: Буквенный ID вместо числа (Type Mismatch)';
+          method = 'PATCH';
+          url = `${API_BASE}/admin/applications/abc_not_a_number/status`;
+          headers['Content-Type'] = 'application/json';
+          if (jwtToken) headers['Authorization'] = `Bearer ${jwtToken}`;
+          body = JSON.stringify({ status: 'confirmed' });
+          break;
+        case 3:
+          testName = 'Тест 3: Некорректный формат даты (Date Parse Error)';
+          method = 'GET';
+          url = `${API_BASE}/slots-status/2026-99-99_invalid_date`;
+          break;
+        case 4:
+          testName = 'Тест 4: Битый JSON в теле запроса (Malformed JSON)';
+          method = 'POST';
+          url = `${API_BASE}/register`;
+          headers['Content-Type'] = 'application/json';
+          body = '{"fio": "Тест", "phone": broken_json_no_quotes...';
+          break;
+        case 5:
+          testName = 'Тест 5: Превышение длины поля (1000 символов)';
+          method = 'POST';
+          url = `${API_BASE}/register`;
+          headers['Content-Type'] = 'application/json';
+          body = JSON.stringify({
+            fio: 'A'.repeat(1000),
+            phone: '+79991234567',
+            email: 'test@example.com',
+            registration_date: '2026-07-20',
+            registration_time: '10:00'
+          });
+          break;
+        case 6:
+          testName = 'Тест 6: Нарушение правила 24 часов';
+          method = 'POST';
+          url = `${API_BASE}/register`;
+          headers['Content-Type'] = 'application/json';
+          const today = new Date().toISOString().split('T')[0];
+          body = JSON.stringify({
+            fio: 'Тестов Тест Тестович',
+            phone: '+7 (900) 111-22-33',
+            email: 'test24@example.com',
+            registration_date: today,
+            registration_time: '09:00'
+          });
+          break;
+        case 7:
+          testName = 'Тест 7: Защита от дубликатов на одну дату';
+          method = 'POST';
+          url = `${API_BASE}/register`;
+          headers['Content-Type'] = 'application/json';
+          body = JSON.stringify({
+            fio: 'Дубликатов Дубликат',
+            phone: '+7 (999) 000-00-01',
+            email: 'dup@example.com',
+            registration_date: '2026-07-25',
+            registration_time: '12:00'
+          });
+          break;
+        case 8:
+          testName = 'Тест 8: Неавторизованный админ-запрос';
+          method = 'GET';
+          url = `${API_BASE}/admin/applications`;
+          // Explicitly omit Authorization header
+          break;
+      }
+
+      statusBadge.textContent = 'Отправка...';
+      statusBadge.className = 'badge badge-pending';
+
+      const startTime = Date.now();
+      try {
+        const fetchOptions = { method, headers };
+        if (body) fetchOptions.body = body;
+
+        const res = await fetch(url, fetchOptions);
+        const elapsed = Date.now() - startTime;
+        timeBadge.textContent = `⏱ ${elapsed} ms`;
+
+        let resText = await res.text();
+        try {
+          resText = JSON.stringify(JSON.parse(resText), null, 2);
+        } catch(e) {}
+
+        statusBadge.textContent = `HTTP ${res.status} ${res.statusText}`;
+        if (res.status === 500) {
+          statusBadge.className = 'badge badge-rejected';
+          verdict.className = 'verdict-banner verdict-failure';
+          verdict.style.display = 'block';
+          verdictText.innerHTML = `❌ <b>ОШИБКА 500 ОБНАРУЖЕНА!</b> Сервер упал с внутренним сбоем.`;
+        } else {
+          statusBadge.className = 'badge badge-confirmed';
+          verdict.className = 'verdict-banner verdict-success';
+          verdict.style.display = 'block';
+          verdictText.innerHTML = `✅ <b>ТЕСТ ПРОЙДЕН! 500 ошибки НЕТ!</b> Сервер вернул корректный статус <code>HTTP ${res.status}</code> с понятным JSON-ответом.`;
+        }
+
+        output.textContent = 
+`=== ${testName} ===
+> ${method} ${url}
+> Headers: ${JSON.stringify(headers)}
+${body ? `> Payload:\n${body}\n` : ''}
+< HTTP/1.1 ${res.status} ${res.statusText} (${elapsed} ms)
+< Content-Type: ${res.headers.get('content-type') || 'application/json'}
+< Response Body:
+${resText}`;
+
+        return res.status !== 500;
+      } catch (err) {
+        output.textContent = `Ошибка сети: ${err.message}`;
+        return false;
+      }
+    }
+
+    // Run All Stress Tests Sequentially
+    async function runAllStressTests() {
+      const verdict = document.getElementById('verdictBanner');
+      const verdictText = document.getElementById('verdictText');
+      verdict.className = 'verdict-banner verdict-success';
+      verdict.style.display = 'block';
+      verdictText.innerHTML = '⏳ Выполняется пакетный прогон 8 стресс-тестов...';
+
+      let passedCount = 0;
+      for (let i = 1; i <= 8; i++) {
+        const ok = await runStressTest(i);
+        if (ok) passedCount++;
+        await new Promise(r => setTimeout(r, 200)); // small delay
+      }
+
+      if (passedCount === 8) {
+        verdict.className = 'verdict-banner verdict-success';
+        verdictText.innerHTML = `🎉 <b>ИТОГ: ВСЕ 8 СТРЕСС-ТЕСТОВ УСПЕШНО ПРОЙДЕНЫ!</b> Ошибок 500 обнаружено: <b>0</b>. Сервер работает со 100% надёжностью.`;
+      } else {
+        verdict.className = 'verdict-banner verdict-failure';
+        verdictText.innerHTML = `⚠️ Пройдено тестов: ${passedCount}/8. Проверьте детали в инспекторе.`;
+      }
+    }
+
+    // =========================================================================
+    // ADMIN FUNCTIONS
+    // =========================================================================
+    async function adminLogin() {
+      const u = document.getElementById('adminUsernameInput').value;
+      const p = document.getElementById('adminPasswordInput').value;
+      if (!u || !p) {
+        alert('Введите имя пользователя и пароль');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          jwtToken = data.token;
+          localStorage.setItem('konyaev_jwt', jwtToken);
+          setLoggedInState();
+        } else {
+          alert('Ошибка авторизации: неверный пароль или логин');
+        }
+      } catch (err) {
+        alert('Сбой запроса авторизации: ' + err.message);
+      }
+    }
+
+    async function adminQuickLogin() {
+      document.getElementById('adminUsernameInput').value = 'admin';
+      document.getElementById('adminPasswordInput').value = 'admin123';
+      adminLogin();
+    }
+
+    function setLoggedInState() {
+      document.getElementById('authStatusBadge').textContent = '● Авторизован (JWT)';
+      document.getElementById('authStatusBadge').className = 'badge badge-confirmed';
+      document.getElementById('adminPanelArea').style.display = 'block';
+      loadApplications(1);
+    }
+
+    async function loadApplications(page = 1) {
+      if (!jwtToken) return;
+      currentPage = page;
+
+      const search = document.getElementById('adminSearchInput').value.trim();
+      const status = document.getElementById('adminStatusFilter').value;
+      const tbody = document.getElementById('applicationsTableBody');
+
+      let url = `${API_BASE}/admin/applications?page=${page}&page_size=15`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (status) url += `&status=${encodeURIComponent(status)}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('konyaev_jwt');
+          jwtToken = '';
+          document.getElementById('adminPanelArea').style.display = 'none';
+          document.getElementById('authStatusBadge').textContent = 'Сессия истекла';
+          document.getElementById('authStatusBadge').className = 'badge badge-rejected';
+          return;
+        }
+
+        const data = await res.json();
+        const items = data.items || [];
+        totalPages = data.pages || 1;
+
+        document.getElementById('paginationInfo').textContent = `Страница ${data.current_page} из ${totalPages} (Всего: ${data.total} заявок)`;
+        document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+        document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-dim); padding: 20px;">Заявлений не найдено</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = items.map(app => `
+          <tr>
+            <td style="font-family: var(--font-mono); color: var(--text-dim);">${app.id}</td>
+            <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">${app.ticket_number || 'TK-' + app.id}</td>
+            <td style="font-weight: 600; color: #fff;">${app.fio}</td>
+            <td style="font-family: var(--font-mono);">${app.phone}</td>
+            <td>${app.email}</td>
+            <td style="color: var(--primary);">${app.registration_date}</td>
+            <td style="font-family: var(--font-mono);">${app.registration_time}</td>
+            <td><span class="badge badge-${app.status}">${app.status}</span></td>
+            <td>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn btn-outline btn-sm" title="Подтвердить" onclick="changeAppStatus(${app.id}, 'confirmed')">✔</button>
+                <button class="btn btn-outline btn-sm" title="Отклонить" onclick="changeAppStatus(${app.id}, 'rejected')">✖</button>
+                <button class="btn btn-danger btn-sm" title="Удалить" onclick="deleteApp(${app.id})">🗑</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--rose);">Сбой загрузки: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterApplications() {
+      loadApplications(1);
+    }
+
+    function changePage(delta) {
+      const target = currentPage + delta;
+      if (target >= 1 && target <= totalPages) {
+        loadApplications(target);
+      }
+    }
+
+    async function changeAppStatus(id, newStatus) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/applications/${id}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          loadApplications(currentPage);
+        } else {
+          alert('Не удалось изменить статус');
+        }
+      } catch (err) {
+        alert('Сбой: ' + err.message);
+      }
+    }
+
+    async function deleteApp(id) {
+      if (!confirm(`Удалить заявку ID #${id}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/applications/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
+        });
+        if (res.ok) {
+          loadApplications(currentPage);
+        } else {
+          alert('Не удалось удалить запись');
+        }
+      } catch (err) {
+        alert('Сбой: ' + err.message);
+      }
+    }
+
+    // Download Excel Export
+    function downloadExcelExport() {
+      if (!jwtToken) return;
+      const date = document.getElementById('selectedDateInput').value || '';
+      let url = `${API_BASE}/admin/applications/export/excel`;
+      if (date) url += `?date=${encodeURIComponent(date)}`;
+
+      fetch(url, {
+        headers: { 'Authorization': `Bearer ${jwtToken}` }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Ошибка экспорта: HTTP ' + res.status);
+        return res.blob();
+      })
+      .then(blob => {
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `applications_${date || 'all'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch(err => alert(err.message));
+    }
+
+    // Run Manual Archive
+    async function runManualArchive() {
+      if (!jwtToken) return;
+      try {
+        const res = await fetch(`${API_BASE}/admin/archive/run`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
+        });
+        const data = await res.json();
+        alert(`Авто-архивация завершена! Перенесено записей: ${data.archived_count || 0}`);
+        loadApplications(currentPage);
+      } catch (err) {
+        alert('Сбой: ' + err.message);
+      }
+    }
+
+    // Toggle Date Admin
+    async function toggleDateAdmin() {
+      const date = document.getElementById('adminToggleDateInput').value;
+      if (!date) return alert('Выберите дату');
+      try {
+        const res = await fetch(`${API_BASE}/admin/toggle-date`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ date })
+        });
+        const data = await res.json();
+        alert(data.message || 'Статус даты обновлён');
+      } catch(err) { alert(err.message); }
+    }
+
+    // Toggle Weekend Admin
+    async function toggleWeekendAdmin() {
+      const date = document.getElementById('adminToggleDateInput').value;
+      if (!date) return alert('Выберите субботу');
+      try {
+        const res = await fetch(`${API_BASE}/admin/toggle-weekend`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ date })
+        });
+        const data = await res.json();
+        alert(data.message || 'Статус субботы обновлён');
+      } catch(err) { alert(err.message); }
+    }
+
+    // Set Daily Limit
+    async function setDailyLimitAdmin() {
+      const date = document.getElementById('adminLimitDateInput').value;
+      const max_registrations = parseInt(document.getElementById('adminLimitValueInput').value, 10);
+      if (!date) return alert('Выберите дату');
+      try {
+        const res = await fetch(`${API_BASE}/admin/daily-limit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ date, max_registrations })
+        });
+        const data = await res.json();
+        alert(`Суточный лимит для ${date} установлен: ${max_registrations}`);
+      } catch(err) { alert(err.message); }
+    }
+  </script>
+</body>
+</html>

@@ -49,6 +49,8 @@ public class SecurityConfig {
                     response.getWriter().write(objectMapper.writeValueAsString(err));
                 }))
                 .authorizeHttpRequests(auth -> auth
+                        // Статические ресурсы и тестовый веб-интерфейс
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/static/**", "/css/**", "/js/**", "/test/**", "/demo/**", "/java/**").permitAll()
                         // Публичные эндпоинты для абитуриентов
                         .requestMatchers(HttpMethod.POST, "/api/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/dates-status").permitAll()
