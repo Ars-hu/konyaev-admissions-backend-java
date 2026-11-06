@@ -1,0 +1,34 @@
+package ru.konyaev.priem.entity;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public enum ApplicationStatus {
+    PENDING("pending"),
+    CONFIRMED("confirmed"),
+    REJECTED("rejected");
+
+    private final String value;
+
+    ApplicationStatus(String value) {
+        this.value = value;
+    }
+
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
+
+    @JsonCreator
+    public static ApplicationStatus fromValue(String value) {
+        if (value == null) {
+            return PENDING;
+        }
+        for (ApplicationStatus status : values()) {
+            if (status.value.equalsIgnoreCase(value) || status.name().equalsIgnoreCase(value)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown status: " + value);
+    }
+}

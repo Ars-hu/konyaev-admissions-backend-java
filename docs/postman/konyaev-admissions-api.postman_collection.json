@@ -1,0 +1,401 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Приёмная комиссия Колледжа им. Коняева (Java Spring Boot 3)",
+    "description": "# ГБПОУ ТО «Тверской колледж им. А.Н. Коняева»\n## Автоматизированная система электронной записи в приёмную комиссию\n\nКоллекция Postman v2.1 для тестирования REST API бэкенда (Java 21, Spring Boot 3, PostgreSQL 16, JWT).\n\n### Переменные коллекции:\n- `baseUrl`: адрес сервера (по умолчанию `http://localhost:8080`).\n- `token`: JWT токен администратора (сохраняется автоматически при входе).\n\n### Быстрый старт:\n1. Выполните запрос `01. Authentication -> POST Admin Login` (логин: `admin`, пароль: `admin123` или значение из `.env`).\n2. Скрипт автоматически запишет токен в переменную `token`.\n3. Все запросы в разделе `03. Admin API` будут авторизованы с заголовком `Authorization: Bearer {{token}}`.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Authentication",
+      "item": [
+        {
+          "name": "POST Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Public API (Абитуриент)",
+      "item": [
+        {
+          "name": "GET Allowed Months",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/allowed-months",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "allowed-months"]
+            }
+          }
+        },
+        {
+          "name": "GET Dates Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dates-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dates-status"]
+            }
+          }
+        },
+        {
+          "name": "GET Slots Status by Date",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/slots-status/2026-07-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "slots-status", "2026-07-15"]
+            }
+          }
+        },
+        {
+          "name": "POST Register Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fio\": \"Иванов Иван Иванович\",\n  \"phone\": \"+7 (999) 123-45-67\",\n  \"email\": \"ivanov@example.com\",\n  \"registration_date\": \"2026-07-15\",\n  \"registration_time\": \"10:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Admin API (Администратор)",
+      "item": [
+        {
+          "name": "GET Applications (Paged, Search, Sort)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/applications?page=1&page_size=25&search=&sort=registration_date&order=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "applications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "25" },
+                { "key": "search", "value": "" },
+                { "key": "sort", "value": "registration_date" },
+                { "key": "order", "value": "asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH Application Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/applications/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "applications", "1", "status"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Application",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/applications/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "applications", "1"]
+            }
+          }
+        },
+        {
+          "name": "GET Export Applications Excel (.xlsx)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/applications/export/excel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "applications", "export", "excel"]
+            }
+          }
+        },
+        {
+          "name": "GET Archive Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/archive?page=1&page_size=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "archive"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Run Archive Manually",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/archive/run",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "archive", "run"]
+            }
+          }
+        },
+        {
+          "name": "GET Blocked & Opened Dates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/blocked-dates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "blocked-dates"]
+            }
+          }
+        },
+        {
+          "name": "POST Toggle Date Block",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-07-20\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/toggle-date",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "toggle-date"]
+            }
+          }
+        },
+        {
+          "name": "POST Toggle Weekend Open",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-07-18\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/toggle-weekend",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "toggle-weekend"]
+            }
+          }
+        },
+        {
+          "name": "GET Slot Configs for Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/slot-configs/2026-07-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "slot-configs", "2026-07-15"]
+            }
+          }
+        },
+        {
+          "name": "POST Update Slot Capacity or Block",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-07-15\",\n  \"time\": \"10:00\",\n  \"max_capacity\": 5,\n  \"is_blocked\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/update-slot",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "update-slot"]
+            }
+          }
+        },
+        {
+          "name": "GET Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "settings"]
+            }
+          }
+        },
+        {
+          "name": "POST Update Settings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advance_hours\": 24\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "settings"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
