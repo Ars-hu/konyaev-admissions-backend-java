@@ -11,7 +11,12 @@ INSERT INTO allowed_month ("year", "month")
 VALUES
     (2026, 6),
     (2026, 7),
-    (2026, 8)
+    (2026, 8),
+    (2026, 11),
+    (2026, 12),
+    (2027, 6),
+    (2027, 7),
+    (2027, 8)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO site_settings ("key", "value")

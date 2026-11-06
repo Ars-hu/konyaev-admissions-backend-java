@@ -79,6 +79,12 @@ public class ApplicationService {
         }
 
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);
+        LocalDate today = now.toLocalDate();
+
+        if (dateObj.isBefore(today)) {
+            throw new IllegalArgumentException("Выбранная дата уже прошла (" + date + "). Пожалуйста, выберите актуальную дату приёма.");
+        }
+
         LocalDateTime slotLdt;
         try {
             slotLdt = LocalDateTime.parse(date + "T" + time + ":00");
@@ -89,7 +95,7 @@ public class ApplicationService {
 
         int advanceHours = settingsService.getAdvanceHours();
         if (!slotZdt.isAfter(now.plusHours(advanceHours))) {
-            throw new IllegalArgumentException("Запись доступна минимум за " + advanceHours + " ч до приёма");
+            throw new IllegalArgumentException("Запись на это время закрыта (требуется оформление минимум за " + advanceHours + " ч до приёма). Пожалуйста, выберите более позднее время или дату.");
         }
 
         if (!allowedMonthRepository.existsByYearAndMonth(dateObj.getYear(), dateObj.getMonthValue())) {

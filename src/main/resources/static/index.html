@@ -993,11 +993,26 @@
         const res = await fetch(`${API_BASE}/allowed-months`);
         if (res.ok) {
           const months = await res.json();
+          const today = new Date();
+          const curYear = today.getFullYear();
+          const curMonth = today.getMonth() + 1;
+
+          // Сортировка по возрастанию года и месяца
+          months.sort((a, b) => (a.year - b.year) || (a.month - b.month));
+
           select.innerHTML = months.map(m => {
             const dateStr = `${m.year}-${String(m.month).padStart(2, '0')}`;
             const monthNames = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
             return `<option value="${dateStr}">${monthNames[m.month]} ${m.year}</option>`;
           }).join('');
+
+          // Автовыбор текущего или ближайшего актуального месяца
+          const bestMonth = months.find(m => (m.year > curYear) || (m.year === curYear && m.month >= curMonth));
+          if (bestMonth) {
+            select.value = `${bestMonth.year}-${String(bestMonth.month).padStart(2, '0')}`;
+          } else if (months.length > 0) {
+            select.value = `${months[months.length - 1].year}-${String(months[months.length - 1].month).padStart(2, '0')}`;
+          }
 
           if (months.length > 0) {
             onMonthSelected();
@@ -1010,11 +1025,55 @@
 
     function onMonthSelected() {
       const val = document.getElementById('allowedMonthSelect').value;
-      if (val) {
-        const defaultDay = `${val}-15`;
-        document.getElementById('selectedDateInput').value = defaultDay;
-        loadSlotsForDate();
+      if (!val) return;
+
+      const [yearStr, monthStr] = val.split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+
+      const today = new Date();
+      const curYear = today.getFullYear();
+      const curMonth = today.getMonth() + 1;
+      const curDate = today.getDate();
+
+      let targetDay = 1;
+      if (year === curYear && month === curMonth) {
+        // Текущий месяц: берём день минимум через 2 дня вперед (с запасом для буфера 24ч)
+        targetDay = curDate + 2;
       }
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+      let chosenDay = null;
+
+      // Ищем первый рабочий день (пн-пт, dayOfWeek: 1..5)
+      for (let d = targetDay; d <= daysInMonth; d++) {
+        const testDate = new Date(year, month - 1, d);
+        const dow = testDate.getDay();
+        if (dow !== 0 && dow !== 6) { // Не суббота и не воскресенье
+          chosenDay = d;
+          break;
+        }
+      }
+
+      if (!chosenDay) {
+        // Если до конца месяца рабочих дней нет, берём 10-е число
+        chosenDay = Math.min(10, daysInMonth);
+      }
+
+      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(chosenDay).padStart(2, '0')}`;
+      const dateInput = document.getElementById('selectedDateInput');
+      dateInput.value = formattedDate;
+
+      // Ограничение минимальной даты для текущего месяца (нельзя выбрать вчера)
+      if (year === curYear && month === curMonth) {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+      } else {
+        dateInput.removeAttribute('min');
+      }
+
+      loadSlotsForDate();
     }
 
     // Load Slots For Date

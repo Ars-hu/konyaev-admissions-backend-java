@@ -44,12 +44,27 @@ public class DataInitializer implements CommandLineRunner {
             log.warn("Startup archive check failed: {}", e.getMessage());
         }
 
-        // 2. Инициализация разрешённых месяцев (6, 7, 8) если таблица пуста
+        // 2. Инициализация разрешённых месяцев (текущий, следующий и летняя кампания)
         try {
-            if (allowedMonthRepository.count() == 0) {
-                int currentYear = LocalDate.now(ApplicationConfig.ZONE_MOSCOW).getYear();
-                for (int m : new int[]{6, 7, 8}) {
-                    allowedMonthRepository.save(AllowedMonth.builder().year(currentYear).month(m).build());
+            LocalDate today = LocalDate.now(ApplicationConfig.ZONE_MOSCOW);
+            int currentYear = today.getYear();
+            int currentMonth = today.getMonthValue();
+
+            // Текущий месяц и следующий месяц для круглогодичного тестирования и работы
+            if (!allowedMonthRepository.existsByYearAndMonth(currentYear, currentMonth)) {
+                allowedMonthRepository.save(AllowedMonth.builder().year(currentYear).month(currentMonth).build());
+            }
+            int nextMonth = currentMonth == 12 ? 1 : currentMonth + 1;
+            int nextYear = currentMonth == 12 ? currentYear + 1 : currentYear;
+            if (!allowedMonthRepository.existsByYearAndMonth(nextYear, nextMonth)) {
+                allowedMonthRepository.save(AllowedMonth.builder().year(nextYear).month(nextMonth).build());
+            }
+
+            // Традиционные месяцы приёмной кампании (июнь, июль, август)
+            int campaignYear = (currentMonth > 8) ? currentYear + 1 : currentYear;
+            for (int m : new int[]{6, 7, 8}) {
+                if (!allowedMonthRepository.existsByYearAndMonth(campaignYear, m)) {
+                    allowedMonthRepository.save(AllowedMonth.builder().year(campaignYear).month(m).build());
                 }
             }
         } catch (Exception e) {
