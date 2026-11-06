@@ -1037,12 +1037,41 @@
         }
 
         const data = await res.json();
-        if (!data.slots || data.slots.length === 0) {
+        const hint = document.getElementById('dateStatusHint');
+        if (data.date_blocked) {
+          hint.innerHTML = '<span style="color: var(--rose);">⚠️ Дата заблокирована для приёма</span>';
+        } else if (data.daily_limit > 0 && data.daily_count >= data.daily_limit) {
+          hint.innerHTML = '<span style="color: var(--amber);">⚠️ Лимит приёма на эту дату исчерпан</span>';
+        } else {
+          hint.innerHTML = '<span style="color: var(--emerald);">✓ Дата открыта для приёма документов</span>';
+        }
+
+        if (!data || !data.slots) {
           container.innerHTML = '<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-dim);">Нет доступных слотов на эту дату</div>';
           return;
         }
 
-        container.innerHTML = data.slots.map(s => {
+        // Поддержка Map/Object и Array
+        let slotList = [];
+        if (Array.isArray(data.slots)) {
+          slotList = data.slots;
+        } else if (typeof data.slots === 'object') {
+          slotList = Object.entries(data.slots).map(([time, s]) => ({
+            time: time,
+            occupied: s.occupied || 0,
+            max_capacity: s.max_capacity !== undefined ? s.max_capacity : 3,
+            is_blocked: !!s.is_blocked || !!data.date_blocked
+          }));
+        }
+
+        slotList.sort((a, b) => a.time.localeCompare(b.time));
+
+        if (slotList.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-dim);">Нет доступных слотов на эту дату</div>';
+          return;
+        }
+
+        container.innerHTML = slotList.map(s => {
           const isFull = s.occupied >= s.max_capacity;
           const isBlocked = s.is_blocked;
           const disabled = isFull || isBlocked;
