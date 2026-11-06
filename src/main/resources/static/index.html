@@ -350,29 +350,36 @@
       border-color: transparent;
     }
 
-    /* Ticket Confirmation */
-    .ticket-card {
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.9));
-      border: 2px solid var(--primary);
+    /* Confirmation Card */
+    .confirm-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.95));
+      border: 2px solid var(--emerald);
       border-radius: 16px;
       padding: 24px;
       margin-top: 18px;
       display: none;
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
     }
-    .ticket-header {
+    .confirm-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px dashed rgba(56, 189, 248, 0.3);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
       padding-bottom: 14px;
       margin-bottom: 16px;
     }
-    .ticket-number {
+    .confirm-title {
+      font-size: 11px;
+      color: var(--emerald);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .confirm-app-number {
       font-family: var(--font-mono);
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
-      color: var(--primary);
+      color: #fff;
     }
 
     /* Stress Test Cards */
@@ -624,23 +631,23 @@
             </button>
           </form>
 
-          <!-- Ticket Result -->
-          <div class="ticket-card" id="ticketCard">
-            <div class="ticket-header">
+          <!-- Registration Success Result -->
+          <div class="confirm-card" id="confirmCard">
+            <div class="confirm-header">
               <div>
-                <div style="font-size: 11px; color: var(--emerald); text-transform: uppercase; font-weight: 700;">Электронный талон записи</div>
-                <div class="ticket-number" id="ticketNumDisplay">TK-1042</div>
+                <div class="confirm-title">✓ Запись подтверждена</div>
+                <div class="confirm-app-number" id="appNumDisplay">Заявка № 1</div>
               </div>
               <div class="badge badge-confirmed">Зарегистрировано</div>
             </div>
             <div style="font-size: 13.5px; line-height: 1.6;">
-              <div><b>Абитуриент:</b> <span id="ticketFio"></span></div>
-              <div><b>Дата визита:</b> <span id="ticketDate" style="color: var(--primary);"></span></div>
-              <div><b>Время слота:</b> <span id="ticketTime" style="color: var(--primary);"></span></div>
-              <div><b>Телефон:</b> <span id="ticketPhone"></span></div>
+              <div><b>Абитуриент:</b> <span id="confirmFio"></span></div>
+              <div><b>Дата приёма:</b> <span id="confirmDate" style="color: var(--primary);"></span></div>
+              <div><b>Время приёма:</b> <span id="confirmTime" style="color: var(--primary);"></span></div>
+              <div><b>Телефон:</b> <span id="confirmPhone"></span></div>
             </div>
             <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: var(--emerald);">
-              ✓ Заявление сохранено в базе данных PostgreSQL. Ждём вас в колледже им. А.Н. Коняева!
+              ✓ Запись успешно внесена в приёмную комиссию колледжа им. А.Н. Коняева.
             </div>
           </div>
 
@@ -846,7 +853,6 @@
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Талон</th>
                   <th>ФИО</th>
                   <th>Телефон</th>
                   <th>Email</th>
@@ -1173,9 +1179,9 @@
     async function submitRegistration(e) {
       e.preventDefault();
       const errBox = document.getElementById('regErrorAlert');
-      const ticketBox = document.getElementById('ticketCard');
+      const confirmBox = document.getElementById('confirmCard');
       errBox.style.display = 'none';
-      ticketBox.style.display = 'none';
+      confirmBox.style.display = 'none';
 
       const payload = {
         fio: document.getElementById('appFio').value.trim(),
@@ -1194,12 +1200,12 @@
 
         const data = await res.json();
         if (res.ok) {
-          ticketBox.style.display = 'block';
-          document.getElementById('ticketNumDisplay').textContent = data.ticket_number || `TK-${data.id}`;
-          document.getElementById('ticketFio').textContent = payload.fio;
-          document.getElementById('ticketDate').textContent = payload.registration_date;
-          document.getElementById('ticketTime').textContent = payload.registration_time;
-          document.getElementById('ticketPhone').textContent = payload.phone;
+          confirmBox.style.display = 'block';
+          document.getElementById('appNumDisplay').textContent = `Заявка № ${data.id}`;
+          document.getElementById('confirmFio').textContent = payload.fio;
+          document.getElementById('confirmDate').textContent = payload.registration_date;
+          document.getElementById('confirmTime').textContent = payload.registration_time;
+          document.getElementById('confirmPhone').textContent = payload.phone;
           loadSlotsForDate(); // refresh
         } else {
           errBox.style.display = 'block';
@@ -1452,14 +1458,13 @@ ${resText}`;
         document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
 
         if (items.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-dim); padding: 20px;">Заявлений не найдено</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-dim); padding: 20px;">Заявлений не найдено</td></tr>';
           return;
         }
 
         tbody.innerHTML = items.map(app => `
           <tr>
             <td style="font-family: var(--font-mono); color: var(--text-dim);">${app.id}</td>
-            <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">${app.ticket_number || 'TK-' + app.id}</td>
             <td style="font-weight: 600; color: #fff;">${app.fio}</td>
             <td style="font-family: var(--font-mono);">${app.phone}</td>
             <td>${app.email}</td>
@@ -1476,7 +1481,7 @@ ${resText}`;
           </tr>
         `).join('');
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--rose);">Сбой загрузки: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--rose);">Сбой загрузки: ${err.message}</td></tr>`;
       }
     }
 
