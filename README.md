@@ -64,7 +64,7 @@
                                          │ JSON
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 1. ПРЕЗЕНТАЦИОННЫЙ СЛОЙ (Web / Presentation Layer)                         │
+│ 1. ПРЕЗЕНТАЦИОННЫЙ СЛОЙ (Web / Presentation Layer)                          │
 │    • PublicController (публичные методы для абитуриентов)                   │
 │    • AdminController (панель администратора)                                │
 │    • AuthController (авторизация по JWT)                                    │
@@ -85,7 +85,7 @@
                                          │ Сущности JPA
                                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 3. СЛОЙ ДОСТУПА К ДАННЫМ (Data Access / Repository Layer)                  │
+│ 3. СЛОЙ ДОСТУПА К ДАННЫМ (Data Access / Repository Layer)                   │
 │    • 9 репозиториев Spring Data JPA (JpaRepository + @Query JPQL)           │
 │    • Оптимизированные JPQL-запросы и составные индексы                      │
 │    • ORM Hibernate 6 + пул соединений HikariCP                              │
