@@ -1,9 +1,8 @@
 package ru.konyaev.priem.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.konyaev.priem.config.ApplicationConfig;
 import ru.konyaev.priem.entity.Application;
@@ -19,9 +18,7 @@ import java.util.Map;
  * Сервис формирования официальных ведомостей приёма в формате Excel (.xlsx)
  * с помощью библиотеки Apache POI.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ExportService {
 
     private final ApplicationService applicationService;
@@ -34,13 +31,19 @@ public class ExportService {
 
     private static final DateTimeFormatter FORMATTER_DATETIME = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    /** Генерирует бинарное содержимое .xlsx файла (за все дни или за выбранную дату). */
+    @Autowired
+    public ExportService(ApplicationService applicationService) {
+        this.applicationService = applicationService;
+    }
+
+    /** Генерирует байты .xlsx файла со списком заявок (всех или на выбранную дату). */
     public byte[] exportApplicationsExcel(String filterDate) throws IOException {
         List<Application> apps = applicationService.getApplicationsForExport(filterDate);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Записи");
 
+            // Стиль для синей шапки таблицы
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
             headerFont.setBold(true);
@@ -109,6 +112,7 @@ public class ExportService {
                 c7.setCellStyle(dataStyle);
             }
 
+            // Ширина столбцов таблицы
             int[] colWidths = {6, 35, 18, 30, 14, 10, 16, 18};
             for (int i = 0; i < colWidths.length; i++) {
                 sheet.setColumnWidth(i, colWidths[i] * 256);

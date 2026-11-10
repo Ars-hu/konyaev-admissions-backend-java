@@ -4,7 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,15 +16,17 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.List;
 
 /**
  * Утилита для генерации, подписи (HMAC-SHA256) и проверки JWT-токенов администратора.
  */
-@Slf4j
 @Component
 public class JwtTokenProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final SecretKey secretKey;
     private final long expirationMs;
@@ -50,10 +53,12 @@ public class JwtTokenProvider {
     /** Создаёт JWT-токен на основе успешной аутентификации Spring Security. */
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
-        return generateToken(userPrincipal.getUsername(),
-                userPrincipal.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.joining(",")));
+        List<String> roleList = new ArrayList<>();
+        for (GrantedAuthority authority : userPrincipal.getAuthorities()) {
+            roleList.add(authority.getAuthority());
+        }
+        String roles = String.join(",", roleList);
+        return generateToken(userPrincipal.getUsername(), roles);
     }
 
     /** Генерирует подписанный JWT-токен со сроком действия (по умолчанию 24 часа). */
@@ -63,7 +68,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(username)
-                .claim("user", username) // Дублируем логин для удобного чтения на клиенте
+                .claim("user", username)
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -86,6 +91,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
+    /** Проверяет подпись и срок действия токена. */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()

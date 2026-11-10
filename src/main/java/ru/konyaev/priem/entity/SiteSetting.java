@@ -1,15 +1,12 @@
 package ru.konyaev.priem.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
+/**
+ * Глобальные настройки системы (например, ключ "advance_hours" со значением "24").
+ */
 @Entity
 @Table(name = "site_settings")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class SiteSetting {
 
     @Id
@@ -21,4 +18,31 @@ public class SiteSetting {
 
     @Column(name = "\"value\"", nullable = false, length = 100)
     private String value;
+
+    public SiteSetting() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 }

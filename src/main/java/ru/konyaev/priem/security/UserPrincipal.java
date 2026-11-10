@@ -1,6 +1,5 @@
 package ru.konyaev.priem.security;
 
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,7 +8,9 @@ import ru.konyaev.priem.entity.User;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
+/**
+ * Представление пользователя (администратора) для Spring Security.
+ */
 public class UserPrincipal implements UserDetails {
 
     private final Long id;
@@ -28,6 +29,25 @@ public class UserPrincipal implements UserDetails {
         String roleName = user.getRole() != null ? user.getRole().name() : "ROLE_ADMIN";
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleName));
         return new UserPrincipal(user.getId(), user.getUsername(), user.getPasswordHash(), authorities);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
     }
 
     @Override

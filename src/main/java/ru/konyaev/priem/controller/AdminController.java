@@ -4,8 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,10 +25,8 @@ import java.util.Map;
  * Административный контроллер (роль ROLE_ADMIN): управление заявками,
  * календарём приёма, квотами, архивом и экспортом ведомостей в Excel.
  */
-@Slf4j
 @RestController
 @RequestMapping("/api/admin")
-@RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin API", description = "Панель администратора приёмной комиссии: реестр заявок, слоты, архив, экспорт")
@@ -40,6 +37,21 @@ public class AdminController {
     private final ArchiveService archiveService;
     private final ExportService exportService;
     private final SettingsService settingsService;
+
+    @Autowired
+    public AdminController(
+            ApplicationService applicationService,
+            CalendarService calendarService,
+            ArchiveService archiveService,
+            ExportService exportService,
+            SettingsService settingsService
+    ) {
+        this.applicationService = applicationService;
+        this.calendarService = calendarService;
+        this.archiveService = archiveService;
+        this.exportService = exportService;
+        this.settingsService = settingsService;
+    }
 
     // ─── Реестр заявлений ────────────────────────────────────────────────────
 

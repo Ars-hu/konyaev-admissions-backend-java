@@ -1,15 +1,12 @@
 package ru.konyaev.priem.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
+/**
+ * Таблица администраторов приёмной комиссии (таблица admin).
+ */
 @Entity
 @Table(name = "admin")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User {
 
     @Id
@@ -24,13 +21,47 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 30)
-    @Builder.Default
     private Role role = Role.ROLE_ADMIN;
+
+    public User() {
+    }
 
     @PrePersist
     public void prePersist() {
         if (this.role == null) {
             this.role = Role.ROLE_ADMIN;
         }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

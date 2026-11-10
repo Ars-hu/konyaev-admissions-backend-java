@@ -1,12 +1,12 @@
 package ru.konyaev.priem.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -24,18 +24,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * Сервис бизнес-логики для работы с заявлениями абитуриентов
- * (регистрация с проверкой квот и расписания, поиск, пагинация, смена статусов).
+ * Сервис бизнес-логики для работы с заявлениями абитуриентов:
+ * запись с проверкой всех ограничений, поиск, пагинация, смена статусов и удаление.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ApplicationService {
+
+    private static final Logger log = LoggerFactory.getLogger(ApplicationService.class);
 
     private final ApplicationRepository applicationRepository;
     private final BlockedDateRepository blockedDateRepository;
@@ -45,9 +46,28 @@ public class ApplicationService {
     private final DailyLimitRepository dailyLimitRepository;
     private final SettingsService settingsService;
 
+    @Autowired
+    public ApplicationService(
+            ApplicationRepository applicationRepository,
+            BlockedDateRepository blockedDateRepository,
+            OpenedDateRepository openedDateRepository,
+            AllowedMonthRepository allowedMonthRepository,
+            SlotConfigRepository slotConfigRepository,
+            DailyLimitRepository dailyLimitRepository,
+            SettingsService settingsService
+    ) {
+        this.applicationRepository = applicationRepository;
+        this.blockedDateRepository = blockedDateRepository;
+        this.openedDateRepository = openedDateRepository;
+        this.allowedMonthRepository = allowedMonthRepository;
+        this.slotConfigRepository = slotConfigRepository;
+        this.dailyLimitRepository = dailyLimitRepository;
+        this.settingsService = settingsService;
+    }
+
     /**
-     * Регистрация нового заявления абитуриента на выбранную дату и 10-минутный слот.
-     * Все ошибки валидации выбрасывают IllegalArgumentException (HTTP 400).
+     * Регистрация нового заявления абитуриента.
+     * Все нарушения правил выбрасывают IllegalArgumentException (возвращается HTTP 400).
      */
     @Transactional
     public Map<String, Object> register(RegisterApplicationRequest req) {
@@ -55,7 +75,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Тело запроса отсутствует");
         }
 
-        // 1. Нормализация и базовая проверка обязательных полей
+        // 1. Очистка пробелов и проверка обязательных полей
         String fio = req.getFio() != null ? req.getFio().trim() : "";
         String phone = req.getPhone() != null ? req.getPhone().trim() : "";
         String email = req.getEmail() != null ? req.getEmail().trim() : "";
@@ -65,7 +85,6 @@ public class ApplicationService {
         if (fio.isBlank() || phone.isBlank() || email.isBlank() || date.isBlank() || time.isBlank()) {
             throw new IllegalArgumentException("Все поля обязательны для заполнения");
         }
-
         if (fio.length() > 255) {
             throw new IllegalArgumentException("ФИО не может быть длиннее 255 символов");
         }
@@ -75,12 +94,11 @@ public class ApplicationService {
         if (email.length() > 100) {
             throw new IllegalArgumentException("Email не может быть длиннее 100 символов");
         }
-
         if (!ApplicationConfig.TIME_SLOTS.contains(time)) {
             throw new IllegalArgumentException("Недопустимое время записи");
         }
 
-        // 2. Проверка корректности даты, прошедших дат и правила 24 часов
+        // 2. Проверка даты и правила заблаговременной записи (по умолчанию 24 ч)
         LocalDate dateObj;
         try {
             dateObj = LocalDate.parse(date);
@@ -89,9 +107,7 @@ public class ApplicationService {
         }
 
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);
-        LocalDate today = now.toLocalDate();
-
-        if (dateObj.isBefore(today)) {
+        if (dateObj.isBefore(now.toLocalDate())) {
             throw new IllegalArgumentException("Выбранная дата уже прошла (" + date + "). Пожалуйста, выберите актуальную дату приёма.");
         }
 
@@ -108,36 +124,35 @@ public class ApplicationService {
             throw new IllegalArgumentException("Запись на это время закрыта (требуется оформление минимум за " + advanceHours + " ч до приёма). Пожалуйста, выберите более позднее время или дату.");
         }
 
-        // 3. Проверка календарных ограничений (месяц, выходной, заблокированный день)
+        // 3. Проверка разрешённого месяца, выходных и заблокированных дат
         if (!allowedMonthRepository.existsByYearAndMonth(dateObj.getYear(), dateObj.getMonthValue())) {
             throw new IllegalArgumentException("Запись на этот месяц недоступна");
         }
-
         if (dateObj.getDayOfWeek() == DayOfWeek.SATURDAY || dateObj.getDayOfWeek() == DayOfWeek.SUNDAY) {
             if (!openedDateRepository.existsByDate(date)) {
                 throw new IllegalArgumentException("Запись в выходные дни недоступна");
             }
         }
-
         if (blockedDateRepository.existsByDate(date)) {
             throw new IllegalArgumentException("Запись на эту дату недоступна");
         }
 
-        // 4. Проверка блокировки и вместимости конкретного слота
+        // 4. Проверка блокировки конкретного 10-минутного слота
         SlotConfig slotCfg = slotConfigRepository.findByDateAndTime(date, time).orElse(null);
         if (slotCfg != null && Boolean.TRUE.equals(slotCfg.getIsBlocked())) {
             throw new IllegalArgumentException("Запись на это время недоступна");
         }
 
         int maxCapacity = (slotCfg != null && slotCfg.getMaxCapacity() != null)
-                ? slotCfg.getMaxCapacity() : ApplicationConfig.DEFAULT_MAX_CAPACITY;
+                ? slotCfg.getMaxCapacity()
+                : ApplicationConfig.DEFAULT_MAX_CAPACITY;
 
-        // 5. Защита от повторной записи тем же абитуриентом на одну дату
+        // 5. Защита от повторной записи одним человеком на одну и ту же дату
         if (applicationRepository.findExistingByDateAndPhoneOrEmail(date, phone, email).isPresent()) {
             throw new IllegalArgumentException("Вы уже записаны на эту дату");
         }
 
-        // 6. Проверка суточного лимита записей на день
+        // 6. Проверка общего дневного лимита записей
         DailyLimit dailyLimitRow = dailyLimitRepository.findByDate(date).orElse(null);
         if (dailyLimitRow != null && dailyLimitRow.getMaxRegistrations() != null && dailyLimitRow.getMaxRegistrations() > 0) {
             long dailyCount = applicationRepository.countByRegistrationDate(date);
@@ -146,21 +161,20 @@ public class ApplicationService {
             }
         }
 
-        // 7. Проверка свободных мест в выбранном 10-минутном слоте
+        // 7. Проверка свободных мест в выбранном слоте
         long slotsCount = applicationRepository.countByRegistrationDateAndRegistrationTime(date, time);
         if (slotsCount >= maxCapacity) {
             throw new IllegalArgumentException("Извините, на это время мест больше нет");
         }
 
-        // 8. Сохранение заявки в PostgreSQL
-        Application application = Application.builder()
-                .fio(fio)
-                .phone(phone)
-                .email(email)
-                .registrationDate(date)
-                .registrationTime(time)
-                .status("pending")
-                .build();
+        // 8. Создание сущности и сохранение в БД
+        Application application = new Application();
+        application.setFio(fio);
+        application.setPhone(phone);
+        application.setEmail(email);
+        application.setRegistrationDate(date);
+        application.setRegistrationTime(time);
+        application.setStatus("pending");
 
         Application saved = applicationRepository.save(application);
         log.info("Registered application #{}: {} on {} {}", saved.getId(), fio, date, time);
@@ -168,25 +182,12 @@ public class ApplicationService {
         return Map.of("message", "Success", "id", saved.getId());
     }
 
+    /** Получение списка активных заявлений с поиском, сортировкой и пагинацией. */
     public PageResponse<ApplicationResponse> getApplications(
             int page, int pageSize, String search, String sortField, String order
     ) {
         int safePage = Math.max(1, Math.min(page, 10000));
         int safePageSize = Math.max(1, Math.min(200, pageSize));
-
-        Specification<Application> spec = Specification.where(null);
-        if (StringUtils.hasText(search)) {
-            String safeSearch = search.trim();
-            if (safeSearch.length() > 200) safeSearch = safeSearch.substring(0, 200);
-            String like = "%" + safeSearch.toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("fio")), like),
-                    cb.like(cb.lower(root.get("phone")), like),
-                    cb.like(cb.lower(root.get("email")), like),
-                    cb.like(cb.lower(root.get("registrationDate")), like),
-                    cb.like(cb.lower(root.get("registrationTime")), like)
-            ));
-        }
 
         Sort.Direction direction = "desc".equalsIgnoreCase(order) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort;
@@ -201,19 +202,30 @@ public class ApplicationService {
         }
 
         Pageable pageable = PageRequest.of(safePage - 1, safePageSize, sort);
-        Page<Application> appPage = applicationRepository.findAll(spec, pageable);
+        Page<Application> appPage;
 
-        List<ApplicationResponse> items = appPage.getContent().stream()
-                .map(this::mapToResponse)
-                .toList();
+        if (StringUtils.hasText(search)) {
+            String safeSearch = search.trim();
+            if (safeSearch.length() > 200) {
+                safeSearch = safeSearch.substring(0, 200);
+            }
+            appPage = applicationRepository.searchApplications(safeSearch, pageable);
+        } else {
+            appPage = applicationRepository.findAll(pageable);
+        }
 
-        return PageResponse.<ApplicationResponse>builder()
-                .items(items)
-                .total(appPage.getTotalElements())
-                .page(safePage)
-                .pageSize(safePageSize)
-                .totalPages(Math.max(1, appPage.getTotalPages()))
-                .build();
+        List<ApplicationResponse> items = new ArrayList<>();
+        for (Application app : appPage.getContent()) {
+            items.add(mapToResponse(app));
+        }
+
+        PageResponse<ApplicationResponse> response = new PageResponse<>();
+        response.setItems(items);
+        response.setTotal(appPage.getTotalElements());
+        response.setPage(safePage);
+        response.setPageSize(safePageSize);
+        response.setTotalPages(Math.max(1, appPage.getTotalPages()));
+        return response;
     }
 
     @Transactional
@@ -253,15 +265,15 @@ public class ApplicationService {
     }
 
     private ApplicationResponse mapToResponse(Application a) {
-        return ApplicationResponse.builder()
-                .id(a.getId())
-                .fio(a.getFio())
-                .phone(a.getPhone())
-                .email(a.getEmail())
-                .registrationDate(a.getRegistrationDate())
-                .registrationTime(a.getRegistrationTime())
-                .status(a.getStatus())
-                .createdAt(a.getCreatedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .build();
+        ApplicationResponse dto = new ApplicationResponse();
+        dto.setId(a.getId());
+        dto.setFio(a.getFio());
+        dto.setPhone(a.getPhone());
+        dto.setEmail(a.getEmail());
+        dto.setRegistrationDate(a.getRegistrationDate());
+        dto.setRegistrationTime(a.getRegistrationTime());
+        dto.setStatus(a.getStatus());
+        dto.setCreatedAt(a.getCreatedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        return dto;
     }
 }

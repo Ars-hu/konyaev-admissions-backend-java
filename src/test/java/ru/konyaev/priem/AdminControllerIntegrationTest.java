@@ -30,10 +30,9 @@ public class AdminControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     private String getAdminToken() throws Exception {
-        LoginRequest req = LoginRequest.builder()
-                .username("admin")
-                .password("admin123")
-                .build();
+        LoginRequest req = new LoginRequest();
+        req.setUsername("admin");
+        req.setPassword("admin123");
 
         MvcResult result = mockMvc.perform(post("/api/admin/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -48,10 +47,9 @@ public class AdminControllerIntegrationTest {
     @Test
     @DisplayName("Admin login with invalid credentials returns 401")
     void testAdminLoginFailure() throws Exception {
-        LoginRequest req = LoginRequest.builder()
-                .username("wrong_admin")
-                .password("wrong_password")
-                .build();
+        LoginRequest req = new LoginRequest();
+        req.setUsername("wrong_admin");
+        req.setPassword("wrong_password");
 
         mockMvc.perform(post("/api/admin/login")
                         .contentType(MediaType.APPLICATION_JSON)

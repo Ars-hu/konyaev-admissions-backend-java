@@ -1,7 +1,6 @@
 package ru.konyaev.priem.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.konyaev.priem.config.ApplicationConfig;
@@ -15,15 +14,12 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Сервис управления календарём приёма: проверка доступности дат и 10-минутных слотов,
- * блокировка дней, открытие рабочих суббот/воскресений, квоты и разрешённые месяцы.
+ * блокировка дней, открытие рабочих выходных, суточные квоты и разрешённые месяцы.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class CalendarService {
 
     private final BlockedDateRepository blockedDateRepository;
@@ -34,68 +30,108 @@ public class CalendarService {
     private final ApplicationRepository applicationRepository;
     private final SettingsService settingsService;
 
-    /** Список годов и месяцев, открытых для подачи документов. */
-    public List<AllowedMonthResponse> getAllowedMonths() {
-        return allowedMonthRepository.findAllByOrderByYearAscMonthAsc().stream()
-                .map(m -> AllowedMonthResponse.builder().year(m.getYear()).month(m.getMonth()).build())
-                .toList();
+    @Autowired
+    public CalendarService(
+            BlockedDateRepository blockedDateRepository,
+            OpenedDateRepository openedDateRepository,
+            AllowedMonthRepository allowedMonthRepository,
+            SlotConfigRepository slotConfigRepository,
+            DailyLimitRepository dailyLimitRepository,
+            ApplicationRepository applicationRepository,
+            SettingsService settingsService
+    ) {
+        this.blockedDateRepository = blockedDateRepository;
+        this.openedDateRepository = openedDateRepository;
+        this.allowedMonthRepository = allowedMonthRepository;
+        this.slotConfigRepository = slotConfigRepository;
+        this.dailyLimitRepository = dailyLimitRepository;
+        this.applicationRepository = applicationRepository;
+        this.settingsService = settingsService;
     }
 
-    /** Возвращает статус каждого из 37 слотов и суточного лимита на конкретную дату. */
+    /** Список годов и месяцев, открытых для записи. */
+    public List<AllowedMonthResponse> getAllowedMonths() {
+        List<AllowedMonth> months = allowedMonthRepository.findAllByOrderByYearAscMonthAsc();
+        List<AllowedMonthResponse> result = new ArrayList<>();
+        for (AllowedMonth m : months) {
+            result.add(new AllowedMonthResponse(m.getYear(), m.getMonth()));
+        }
+        return result;
+    }
+
+    /** Возвращает статус каждого из 37 слотов и суточного лимита на выбранную дату. */
     public SlotsStatusResponse getSlotsStatus(String date) {
         validateDateString(date);
 
         boolean dateBlocked = blockedDateRepository.existsByDate(date);
 
+        // Считаем сколько человек уже записалось на каждое время в этот день
         List<Application> apps = applicationRepository.findByRegistrationDate(date);
         Map<String, Integer> occupiedMap = new HashMap<>();
         for (Application a : apps) {
-            occupiedMap.put(a.getRegistrationTime(), occupiedMap.getOrDefault(a.getRegistrationTime(), 0) + 1);
+            int current = occupiedMap.getOrDefault(a.getRegistrationTime(), 0);
+            occupiedMap.put(a.getRegistrationTime(), current + 1);
         }
 
+        // Загружаем индивидуальные настройки слотов (вместимость и блокировка)
         List<SlotConfig> configs = slotConfigRepository.findByDate(date);
-        Map<String, SlotConfig> configMap = configs.stream()
-                .collect(Collectors.toMap(SlotConfig::getTime, c -> c));
+        Map<String, SlotConfig> configMap = new HashMap<>();
+        for (SlotConfig sc : configs) {
+            configMap.put(sc.getTime(), sc);
+        }
 
+        // Формируем итоговую карту слотов с 09:00 до 15:00
         Map<String, SlotInfoResponse> slots = new LinkedHashMap<>();
         for (String time : ApplicationConfig.TIME_SLOTS) {
             SlotConfig cfg = configMap.get(time);
             int occupied = occupiedMap.getOrDefault(time, 0);
-            int maxCap = (cfg != null && cfg.getMaxCapacity() != null) ? cfg.getMaxCapacity() : ApplicationConfig.DEFAULT_MAX_CAPACITY;
-            boolean isBlocked = cfg != null && Boolean.TRUE.equals(cfg.getIsBlocked());
+            int maxCap = (cfg != null && cfg.getMaxCapacity() != null)
+                    ? cfg.getMaxCapacity()
+                    : ApplicationConfig.DEFAULT_MAX_CAPACITY;
+            boolean isBlocked = (cfg != null && Boolean.TRUE.equals(cfg.getIsBlocked()));
 
-            slots.put(time, SlotInfoResponse.builder()
-                    .occupied(occupied)
-                    .maxCapacity(maxCap)
-                    .isBlocked(isBlocked)
-                    .build());
+            SlotInfoResponse info = new SlotInfoResponse();
+            info.setOccupied(occupied);
+            info.setMaxCapacity(maxCap);
+            info.setBlocked(isBlocked);
+            slots.put(time, info);
         }
 
         DailyLimit dailyLimit = dailyLimitRepository.findByDate(date).orElse(null);
-        int maxReg = (dailyLimit != null && dailyLimit.getMaxRegistrations() != null) ? dailyLimit.getMaxRegistrations() : 0;
-        long dailyCount = apps.size();
+        int maxReg = (dailyLimit != null && dailyLimit.getMaxRegistrations() != null)
+                ? dailyLimit.getMaxRegistrations()
+                : 0;
 
-        return SlotsStatusResponse.builder()
-                .dateBlocked(dateBlocked)
-                .slots(slots)
-                .dailyLimit(maxReg)
-                .dailyCount(dailyCount)
-                .build();
+        SlotsStatusResponse response = new SlotsStatusResponse();
+        response.setDateBlocked(dateBlocked);
+        response.setSlots(slots);
+        response.setDailyLimit(maxReg);
+        response.setDailyCount(apps.size());
+        return response;
     }
 
+    /** Собирает общую статистику календаря: заблокированные, заполненные и ближайшие недоступные даты. */
     public DatesStatusResponse getDatesStatus() {
-        List<String> blockedDates = blockedDateRepository.findAll().stream()
-                .map(BlockedDate::getDate)
-                .toList();
+        List<String> blockedDates = new ArrayList<>();
+        for (BlockedDate b : blockedDateRepository.findAll()) {
+            blockedDates.add(b.getDate());
+        }
 
-        List<String> openedWeekends = openedDateRepository.findAll().stream()
-                .map(OpenedDate::getDate)
-                .toList();
+        List<String> openedWeekends = new ArrayList<>();
+        for (OpenedDate o : openedDateRepository.findAll()) {
+            openedWeekends.add(o.getDate());
+        }
 
+        // Группируем количество записей по (дата -> время -> количество)
         List<ApplicationRepository.SlotCountView> counts = applicationRepository.countGroupedByDateAndTime();
         Map<String, Map<String, Long>> byDate = new HashMap<>();
         for (ApplicationRepository.SlotCountView sc : counts) {
-            byDate.computeIfAbsent(sc.getDate(), k -> new HashMap<>()).put(sc.getTime(), sc.getCount());
+            Map<String, Long> timeMap = byDate.get(sc.getDate());
+            if (timeMap == null) {
+                timeMap = new HashMap<>();
+                byDate.put(sc.getDate(), timeMap);
+            }
+            timeMap.put(sc.getTime(), sc.getCount());
         }
 
         List<SlotConfig> allConfigs = slotConfigRepository.findByDateIn(byDate.keySet());
@@ -104,6 +140,7 @@ public class CalendarService {
             configMap.put(sc.getDate() + "_" + sc.getTime(), sc);
         }
 
+        // Определяем даты, в которых заняты абсолютно все слоты
         Set<String> fullDates = new HashSet<>();
         for (Map.Entry<String, Map<String, Long>> entry : byDate.entrySet()) {
             String date = entry.getKey();
@@ -115,7 +152,9 @@ public class CalendarService {
                 if (cfg != null && Boolean.TRUE.equals(cfg.getIsBlocked())) {
                     continue;
                 }
-                int maxCap = (cfg != null && cfg.getMaxCapacity() != null) ? cfg.getMaxCapacity() : ApplicationConfig.DEFAULT_MAX_CAPACITY;
+                int maxCap = (cfg != null && cfg.getMaxCapacity() != null)
+                        ? cfg.getMaxCapacity()
+                        : ApplicationConfig.DEFAULT_MAX_CAPACITY;
                 long curOccupied = timeCounts.getOrDefault(t, 0L);
                 if (curOccupied < maxCap) {
                     allFull = false;
@@ -127,6 +166,7 @@ public class CalendarService {
             }
         }
 
+        // Добавляем в заполненные те дни, где достигнут суточный лимит
         List<DailyLimit> activeLimits = dailyLimitRepository.findByMaxRegistrationsGreaterThan(0);
         for (DailyLimit dl : activeLimits) {
             long count = applicationRepository.countByRegistrationDate(dl.getDate());
@@ -135,6 +175,7 @@ public class CalendarService {
             }
         }
 
+        // Проверяем даты, которые полностью попадают в буфер 24 часов
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);
         int advanceHours = settingsService.getAdvanceHours();
         ZonedDateTime cutoff = now.plusHours(advanceHours);
@@ -156,15 +197,15 @@ public class CalendarService {
             }
         }
 
-        return DatesStatusResponse.builder()
-                .blockedDates(blockedDates)
-                .fullDates(new ArrayList<>(fullDates))
-                .openedWeekends(openedWeekends)
-                .blockedWithin24h(blockedWithinAdvance)
-                .serverDate(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .serverNow(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
-                .advanceHours(advanceHours)
-                .build();
+        DatesStatusResponse response = new DatesStatusResponse();
+        response.setBlockedDates(blockedDates);
+        response.setFullDates(new ArrayList<>(fullDates));
+        response.setOpenedWeekends(openedWeekends);
+        response.setBlockedWithin24h(blockedWithinAdvance);
+        response.setServerDate(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        response.setServerNow(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        response.setAdvanceHours(advanceHours);
+        return response;
     }
 
     @Transactional
@@ -175,7 +216,9 @@ public class CalendarService {
             blockedDateRepository.delete(existing.get());
             return Map.of("blocked", false, "date", date);
         } else {
-            blockedDateRepository.save(BlockedDate.builder().date(date).build());
+            BlockedDate blockedDate = new BlockedDate();
+            blockedDate.setDate(date);
+            blockedDateRepository.save(blockedDate);
             return Map.of("blocked", true, "date", date);
         }
     }
@@ -191,7 +234,9 @@ public class CalendarService {
             openedDateRepository.delete(existing.get());
             return Map.of("opened", false, "date", date);
         } else {
-            openedDateRepository.save(OpenedDate.builder().date(date).build());
+            OpenedDate openedDate = new OpenedDate();
+            openedDate.setDate(date);
+            openedDateRepository.save(openedDate);
             return Map.of("opened", true, "date", date);
         }
     }
@@ -206,16 +251,21 @@ public class CalendarService {
         }
 
         List<SlotConfig> configs = slotConfigRepository.findByDate(date);
-        Map<String, SlotConfig> map = configs.stream().collect(Collectors.toMap(SlotConfig::getTime, c -> c));
+        Map<String, SlotConfig> configMap = new HashMap<>();
+        for (SlotConfig sc : configs) {
+            configMap.put(sc.getTime(), sc);
+        }
 
         Map<String, SlotInfoResponse> result = new LinkedHashMap<>();
         for (String t : ApplicationConfig.TIME_SLOTS) {
-            SlotConfig cfg = map.get(t);
-            result.put(t, SlotInfoResponse.builder()
-                    .maxCapacity(cfg != null && cfg.getMaxCapacity() != null ? cfg.getMaxCapacity() : ApplicationConfig.DEFAULT_MAX_CAPACITY)
-                    .isBlocked(cfg != null && Boolean.TRUE.equals(cfg.getIsBlocked()))
-                    .occupied(occupied.getOrDefault(t, 0))
-                    .build());
+            SlotConfig cfg = configMap.get(t);
+            SlotInfoResponse info = new SlotInfoResponse();
+            info.setMaxCapacity(cfg != null && cfg.getMaxCapacity() != null
+                    ? cfg.getMaxCapacity()
+                    : ApplicationConfig.DEFAULT_MAX_CAPACITY);
+            info.setBlocked(cfg != null && Boolean.TRUE.equals(cfg.getIsBlocked()));
+            info.setOccupied(occupied.getOrDefault(t, 0));
+            result.put(t, info);
         }
         return result;
     }
@@ -227,8 +277,12 @@ public class CalendarService {
             throw new IllegalArgumentException("Недопустимое время");
         }
 
-        SlotConfig cfg = slotConfigRepository.findByDateAndTime(date, time)
-                .orElseGet(() -> SlotConfig.builder().date(date).time(time).build());
+        SlotConfig cfg = slotConfigRepository.findByDateAndTime(date, time).orElse(null);
+        if (cfg == null) {
+            cfg = new SlotConfig();
+            cfg.setDate(date);
+            cfg.setTime(time);
+        }
 
         if (maxCapacity != null) {
             if (maxCapacity < 1 || maxCapacity > 100) {
@@ -265,8 +319,11 @@ public class CalendarService {
         if (allowedMonthRepository.existsByYearAndMonth(year, month)) {
             throw new IllegalStateException("Этот месяц уже добавлен");
         }
-        AllowedMonth saved = allowedMonthRepository.save(AllowedMonth.builder().year(year).month(month).build());
-        return AllowedMonthResponse.builder().year(saved.getYear()).month(saved.getMonth()).build();
+        AllowedMonth newMonth = new AllowedMonth();
+        newMonth.setYear(year);
+        newMonth.setMonth(month);
+        AllowedMonth saved = allowedMonthRepository.save(newMonth);
+        return new AllowedMonthResponse(saved.getYear(), saved.getMonth());
     }
 
     @Transactional
@@ -289,11 +346,12 @@ public class CalendarService {
         validateDateString(date);
         DailyLimit row = dailyLimitRepository.findByDate(date).orElse(null);
         long count = applicationRepository.countByRegistrationDate(date);
-        return DailyLimitResponse.builder()
-                .date(date)
-                .maxRegistrations(row != null ? row.getMaxRegistrations() : 0)
-                .currentCount(count)
-                .build();
+
+        DailyLimitResponse response = new DailyLimitResponse();
+        response.setDate(date);
+        response.setMaxRegistrations(row != null ? row.getMaxRegistrations() : 0);
+        response.setCurrentCount(count);
+        return response;
     }
 
     @Transactional
@@ -302,21 +360,34 @@ public class CalendarService {
         if (maxRegistrations < 0 || maxRegistrations > 10000) {
             throw new IllegalArgumentException("Лимит должен быть от 0 до 10000");
         }
-        DailyLimit row = dailyLimitRepository.findByDate(date)
-                .orElseGet(() -> DailyLimit.builder().date(date).build());
+        DailyLimit row = dailyLimitRepository.findByDate(date).orElse(null);
+        if (row == null) {
+            row = new DailyLimit();
+            row.setDate(date);
+        }
         row.setMaxRegistrations(maxRegistrations);
         dailyLimitRepository.save(row);
 
-        return DailyLimitResponse.builder()
-                .date(date)
-                .maxRegistrations(maxRegistrations)
-                .build();
+        DailyLimitResponse response = new DailyLimitResponse();
+        response.setDate(date);
+        response.setMaxRegistrations(maxRegistrations);
+        return response;
     }
 
     public Map<String, List<String>> getAdminBlockedDates() {
+        List<String> blocked = new ArrayList<>();
+        for (BlockedDate b : blockedDateRepository.findAll()) {
+            blocked.add(b.getDate());
+        }
+
+        List<String> opened = new ArrayList<>();
+        for (OpenedDate o : openedDateRepository.findAll()) {
+            opened.add(o.getDate());
+        }
+
         return Map.of(
-                "blocked_dates", blockedDateRepository.findAll().stream().map(BlockedDate::getDate).toList(),
-                "opened_weekends", openedDateRepository.findAll().stream().map(OpenedDate::getDate).toList()
+                "blocked_dates", blocked,
+                "opened_weekends", opened
         );
     }
 

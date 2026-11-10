@@ -2,7 +2,7 @@ package ru.konyaev.priem.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,16 +28,21 @@ import java.util.List;
 
 /**
  * Конфигурация Spring Security 6: stateless JWT-авторизация, CORS, BCrypt
- * и разграничение доступа (публичные маршруты абитуриента vs ROLE_ADMIN).
+ * и разграничение доступа (публичные маршруты абитуриента и защищённые маршруты ROLE_ADMIN).
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+
+    @Autowired
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

@@ -1,16 +1,20 @@
 package ru.konyaev.priem.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ToggleWeekendRequest {
+
     @NotBlank(message = "Дата обязательна")
     private String date;
+
+    public ToggleWeekendRequest() {
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 }

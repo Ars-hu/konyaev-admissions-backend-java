@@ -1,18 +1,10 @@
 package ru.konyaev.priem.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class PageResponse<T> {
+
     private List<T> items;
     private long total;
     private int page;
@@ -22,4 +14,47 @@ public class PageResponse<T> {
 
     @JsonProperty("total_pages")
     private int totalPages;
+
+    public PageResponse() {
+    }
+
+    public List<T> getItems() {
+        return items;
+    }
+
+    public void setItems(List<T> items) {
+        this.items = items;
+    }
+
+    public long getTotal() {
+        return total;
+    }
+
+    public void setTotal(long total) {
+        this.total = total;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
+    }
 }

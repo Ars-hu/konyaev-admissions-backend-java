@@ -3,8 +3,7 @@ package ru.konyaev.priem.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +18,18 @@ import java.util.Map;
 /**
  * Презентационный слой (публичный): эндпоинты для абитуриентов без авторизации.
  */
-@Slf4j
 @RestController
-@RequiredArgsConstructor
 @Tag(name = "Public API", description = "Публичные методы для абитуриентов: запись, календарь, слоты")
 public class PublicController {
 
     private final ApplicationService applicationService;
     private final CalendarService calendarService;
+
+    @Autowired
+    public PublicController(ApplicationService applicationService, CalendarService calendarService) {
+        this.applicationService = applicationService;
+        this.calendarService = calendarService;
+    }
 
     @Operation(summary = "Регистрация заявления абитуриента", description = "Создание новой заявки на подачу документов")
     @PostMapping(value = {"/api/register", "/api/v1/applications/register"})

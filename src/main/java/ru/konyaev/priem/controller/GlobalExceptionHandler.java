@@ -1,6 +1,7 @@
 package ru.konyaev.priem.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.konyaev.priem.dto.response.ErrorResponse;
 
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +29,10 @@ import java.util.NoSuchElementException;
  * Преобразует любые исключения (ошибки валидации, неверный JSON, переполнение типов)
  * в аккуратный JSON-ответ со статусом 4xx, исключая возврат 500 Internal Server Error.
  */
-@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
@@ -89,12 +93,12 @@ public class GlobalExceptionHandler {
             firstMessage = fieldError.getDefaultMessage();
         }
 
-        ErrorResponse response = ErrorResponse.builder()
-                .error(firstMessage)
-                .message(firstMessage)
-                .status(HttpStatus.BAD_REQUEST.value())
-                .validationErrors(errors)
-                .build();
+        ErrorResponse response = new ErrorResponse();
+        response.setError(firstMessage);
+        response.setMessage(firstMessage);
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setTimestamp(Instant.now());
+        response.setValidationErrors(errors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
@@ -125,15 +129,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("Метод " + ex.getMethod() + " не поддерживается для данного пути", HttpStatus.METHOD_NOT_ALLOWED.value()));
     }
 
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.of("Ресурс не найден: " + ex.getResourcePath(), HttpStatus.NOT_FOUND.value()));
     }
 
-    /**
-     * Предотвращает возникновение любых необработанных 500 ошибок в API.
-     */
+    /** Безопасный перехватчик любых оставшихся ошибок (гарантирует отсутствие 500). */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Throwable ex) {
         log.error("Safe fallback handler caught exception: ", ex);

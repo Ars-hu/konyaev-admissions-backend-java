@@ -1,12 +1,12 @@
 package ru.konyaev.priem.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,15 +29,24 @@ import java.util.List;
  * Сервис автоматического и ручного архивирования просроченных заявлений.
  * Фоновая задача запускается каждые 5 минут (@Scheduled).
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class ArchiveService {
+
+    private static final Logger log = LoggerFactory.getLogger(ArchiveService.class);
 
     private final ApplicationRepository applicationRepository;
     private final ArchivedApplicationRepository archivedApplicationRepository;
 
-    /** Переносит все заявки, время приёма которых уже наступило, в архивную таблицу. */
+    @Autowired
+    public ArchiveService(
+            ApplicationRepository applicationRepository,
+            ArchivedApplicationRepository archivedApplicationRepository
+    ) {
+        this.applicationRepository = applicationRepository;
+        this.archivedApplicationRepository = archivedApplicationRepository;
+    }
+
+    /** Переносит заявки, время приёма которых уже наступило, в архивную таблицу. */
     @Transactional
     public int archiveExpired() {
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);
@@ -51,17 +60,17 @@ public class ArchiveService {
 
         List<ArchivedApplication> toArchive = new ArrayList<>();
         for (Application app : expired) {
-            toArchive.add(ArchivedApplication.builder()
-                    .originalId(app.getId())
-                    .fio(app.getFio())
-                    .phone(app.getPhone())
-                    .email(app.getEmail())
-                    .registrationDate(app.getRegistrationDate())
-                    .registrationTime(app.getRegistrationTime())
-                    .status(app.getStatus())
-                    .createdAt(app.getCreatedAt())
-                    .archivedAt(Instant.now())
-                    .build());
+            ArchivedApplication archived = new ArchivedApplication();
+            archived.setOriginalId(app.getId());
+            archived.setFio(app.getFio());
+            archived.setPhone(app.getPhone());
+            archived.setEmail(app.getEmail());
+            archived.setRegistrationDate(app.getRegistrationDate());
+            archived.setRegistrationTime(app.getRegistrationTime());
+            archived.setStatus(app.getStatus());
+            archived.setCreatedAt(app.getCreatedAt());
+            archived.setArchivedAt(Instant.now());
+            toArchive.add(archived);
         }
 
         archivedApplicationRepository.saveAll(toArchive);
@@ -71,7 +80,8 @@ public class ArchiveService {
         return expired.size();
     }
 
-    @Scheduled(fixedDelay = 300000) // Каждые 5 минут
+    /** Запускается фоном каждые 5 минут (300 000 миллисекунд). */
+    @Scheduled(fixedDelay = 300000)
     public void scheduledArchive() {
         try {
             int count = archiveExpired();
@@ -89,19 +99,6 @@ public class ArchiveService {
         int safePage = Math.max(1, Math.min(page, 10000));
         int safePageSize = Math.max(1, Math.min(200, pageSize));
 
-        Specification<ArchivedApplication> spec = Specification.where(null);
-        if (StringUtils.hasText(search)) {
-            String safeSearch = search.trim();
-            if (safeSearch.length() > 200) safeSearch = safeSearch.substring(0, 200);
-            String like = "%" + safeSearch.toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("fio")), like),
-                    cb.like(cb.lower(root.get("phone")), like),
-                    cb.like(cb.lower(root.get("email")), like),
-                    cb.like(cb.lower(root.get("registrationDate")), like)
-            ));
-        }
-
         Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort;
         if ("fio".equalsIgnoreCase(sortField)) {
@@ -115,33 +112,44 @@ public class ArchiveService {
         }
 
         Pageable pageable = PageRequest.of(safePage - 1, safePageSize, sort);
-        Page<ArchivedApplication> resultPage = archivedApplicationRepository.findAll(spec, pageable);
+        Page<ArchivedApplication> resultPage;
 
-        List<ArchivedApplicationResponse> items = resultPage.getContent().stream()
-                .map(this::mapToResponse)
-                .toList();
+        if (StringUtils.hasText(search)) {
+            String safeSearch = search.trim();
+            if (safeSearch.length() > 200) {
+                safeSearch = safeSearch.substring(0, 200);
+            }
+            resultPage = archivedApplicationRepository.searchArchive(safeSearch, pageable);
+        } else {
+            resultPage = archivedApplicationRepository.findAll(pageable);
+        }
 
-        return PageResponse.<ArchivedApplicationResponse>builder()
-                .items(items)
-                .total(resultPage.getTotalElements())
-                .page(safePage)
-                .pageSize(safePageSize)
-                .totalPages(Math.max(1, resultPage.getTotalPages()))
-                .build();
+        List<ArchivedApplicationResponse> items = new ArrayList<>();
+        for (ArchivedApplication a : resultPage.getContent()) {
+            items.add(mapToResponse(a));
+        }
+
+        PageResponse<ArchivedApplicationResponse> response = new PageResponse<>();
+        response.setItems(items);
+        response.setTotal(resultPage.getTotalElements());
+        response.setPage(safePage);
+        response.setPageSize(safePageSize);
+        response.setTotalPages(Math.max(1, resultPage.getTotalPages()));
+        return response;
     }
 
     private ArchivedApplicationResponse mapToResponse(ArchivedApplication a) {
-        return ArchivedApplicationResponse.builder()
-                .id(a.getId())
-                .originalId(a.getOriginalId())
-                .fio(a.getFio())
-                .phone(a.getPhone())
-                .email(a.getEmail())
-                .registrationDate(a.getRegistrationDate())
-                .registrationTime(a.getRegistrationTime())
-                .status(a.getStatus())
-                .createdAt(a.getCreatedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .archivedAt(a.getArchivedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .build();
+        ArchivedApplicationResponse dto = new ArchivedApplicationResponse();
+        dto.setId(a.getId());
+        dto.setOriginalId(a.getOriginalId());
+        dto.setFio(a.getFio());
+        dto.setPhone(a.getPhone());
+        dto.setEmail(a.getEmail());
+        dto.setRegistrationDate(a.getRegistrationDate());
+        dto.setRegistrationTime(a.getRegistrationTime());
+        dto.setStatus(a.getStatus());
+        dto.setCreatedAt(a.getCreatedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        dto.setArchivedAt(a.getArchivedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        return dto;
     }
 }

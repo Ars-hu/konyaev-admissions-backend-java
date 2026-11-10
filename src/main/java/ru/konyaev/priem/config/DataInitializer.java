@@ -1,7 +1,8 @@
 package ru.konyaev.priem.config;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,10 +17,14 @@ import ru.konyaev.priem.service.SettingsService;
 
 import java.time.LocalDate;
 
-@Slf4j
+/**
+ * Инициализатор начальных данных при запуске приложения:
+ * архивация старых записей, добавление разрешённых месяцев, создание администратора и настроек.
+ */
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final AllowedMonthRepository allowedMonthRepository;
@@ -32,6 +37,21 @@ public class DataInitializer implements CommandLineRunner {
 
     @Value("${app.admin.password:admin123}")
     private String adminPassword;
+
+    @Autowired
+    public DataInitializer(
+            UserRepository userRepository,
+            AllowedMonthRepository allowedMonthRepository,
+            ArchiveService archiveService,
+            SettingsService settingsService,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.userRepository = userRepository;
+        this.allowedMonthRepository = allowedMonthRepository;
+        this.archiveService = archiveService;
+        this.settingsService = settingsService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) {
@@ -50,36 +70,45 @@ public class DataInitializer implements CommandLineRunner {
             int currentYear = today.getYear();
             int currentMonth = today.getMonthValue();
 
-            // Текущий месяц и следующий месяц для круглогодичного тестирования и работы
+            // Текущий и следующий месяц для круглогодичной работы
             if (!allowedMonthRepository.existsByYearAndMonth(currentYear, currentMonth)) {
-                allowedMonthRepository.save(AllowedMonth.builder().year(currentYear).month(currentMonth).build());
+                AllowedMonth current = new AllowedMonth();
+                current.setYear(currentYear);
+                current.setMonth(currentMonth);
+                allowedMonthRepository.save(current);
             }
+
             int nextMonth = currentMonth == 12 ? 1 : currentMonth + 1;
             int nextYear = currentMonth == 12 ? currentYear + 1 : currentYear;
             if (!allowedMonthRepository.existsByYearAndMonth(nextYear, nextMonth)) {
-                allowedMonthRepository.save(AllowedMonth.builder().year(nextYear).month(nextMonth).build());
+                AllowedMonth next = new AllowedMonth();
+                next.setYear(nextYear);
+                next.setMonth(nextMonth);
+                allowedMonthRepository.save(next);
             }
 
-            // Традиционные месяцы приёмной кампании (июнь, июль, август)
+            // Основные месяцы летней приёмной кампании (июнь, июль, август)
             int campaignYear = (currentMonth > 8) ? currentYear + 1 : currentYear;
             for (int m : new int[]{6, 7, 8}) {
                 if (!allowedMonthRepository.existsByYearAndMonth(campaignYear, m)) {
-                    allowedMonthRepository.save(AllowedMonth.builder().year(campaignYear).month(m).build());
+                    AllowedMonth summer = new AllowedMonth();
+                    summer.setYear(campaignYear);
+                    summer.setMonth(m);
+                    allowedMonthRepository.save(summer);
                 }
             }
         } catch (Exception e) {
             log.warn("Failed to initialize allowed months: {}", e.getMessage());
         }
 
-        // 3. Создание или обновление учетной записи администратора
+        // 3. Создание или обновление учётной записи администратора
         try {
             User admin = userRepository.findByUsername(adminUsername).orElse(null);
             if (admin == null) {
-                admin = User.builder()
-                        .username(adminUsername)
-                        .passwordHash(passwordEncoder.encode(adminPassword))
-                        .role(Role.ROLE_ADMIN)
-                        .build();
+                admin = new User();
+                admin.setUsername(adminUsername);
+                admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+                admin.setRole(Role.ROLE_ADMIN);
                 userRepository.save(admin);
                 log.info("Initialized default administrator account: {}", adminUsername);
             } else {

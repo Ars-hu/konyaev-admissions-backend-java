@@ -1,15 +1,12 @@
 package ru.konyaev.priem.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
+/**
+ * Максимальный лимит записей на выбранный день.
+ */
 @Entity
 @Table(name = "daily_limit")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class DailyLimit {
 
     @Id
@@ -20,6 +17,32 @@ public class DailyLimit {
     private String date;
 
     @Column(name = "max_registrations", nullable = false)
-    @Builder.Default
     private Integer maxRegistrations = 0;
+
+    public DailyLimit() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Integer getMaxRegistrations() {
+        return maxRegistrations;
+    }
+
+    public void setMaxRegistrations(Integer maxRegistrations) {
+        this.maxRegistrations = maxRegistrations;
+    }
 }

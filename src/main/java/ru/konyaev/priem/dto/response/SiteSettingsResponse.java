@@ -1,16 +1,24 @@
 package ru.konyaev.priem.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SiteSettingsResponse {
+
     @JsonProperty("advance_hours")
     private Integer advanceHours;
+
+    public SiteSettingsResponse() {
+    }
+
+    public SiteSettingsResponse(Integer advanceHours) {
+        this.advanceHours = advanceHours;
+    }
+
+    public Integer getAdvanceHours() {
+        return advanceHours;
+    }
+
+    public void setAdvanceHours(Integer advanceHours) {
+        this.advanceHours = advanceHours;
+    }
 }

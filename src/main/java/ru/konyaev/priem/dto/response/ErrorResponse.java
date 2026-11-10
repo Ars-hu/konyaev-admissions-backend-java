@@ -1,32 +1,67 @@
 package ru.konyaev.priem.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.Instant;
 import java.util.Map;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
+
     private String error;
     private String message;
     private int status;
     private Instant timestamp;
     private Map<String, String> validationErrors;
 
+    public ErrorResponse() {
+    }
+
     public static ErrorResponse of(String message, int status) {
-        return ErrorResponse.builder()
-                .error(message)
-                .message(message)
-                .status(status)
-                .timestamp(Instant.now())
-                .build();
+        ErrorResponse response = new ErrorResponse();
+        response.setError(message);
+        response.setMessage(message);
+        response.setStatus(status);
+        response.setTimestamp(Instant.now());
+        return response;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Map<String, String> getValidationErrors() {
+        return validationErrors;
+    }
+
+    public void setValidationErrors(Map<String, String> validationErrors) {
+        this.validationErrors = validationErrors;
     }
 }

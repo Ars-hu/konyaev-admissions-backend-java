@@ -6,16 +6,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class DailyLimitRequest {
+
     @NotBlank(message = "Дата обязательна")
     @Size(max = 20, message = "Дата не может превышать 20 символов")
     private String date;
@@ -25,4 +18,23 @@ public class DailyLimitRequest {
     @Max(value = 10000, message = "Лимит не может превышать 10000")
     @JsonProperty("max_registrations")
     private Integer maxRegistrations;
+
+    public DailyLimitRequest() {
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Integer getMaxRegistrations() {
+        return maxRegistrations;
+    }
+
+    public void setMaxRegistrations(Integer maxRegistrations) {
+        this.maxRegistrations = maxRegistrations;
+    }
 }

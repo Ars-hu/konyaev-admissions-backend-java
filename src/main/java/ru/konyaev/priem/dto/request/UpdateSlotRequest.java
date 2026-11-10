@@ -5,15 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class UpdateSlotRequest {
 
     @NotBlank(message = "Дата обязательна")
@@ -31,4 +23,39 @@ public class UpdateSlotRequest {
 
     @JsonProperty("is_blocked")
     private Boolean isBlocked;
+
+    public UpdateSlotRequest() {
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public Boolean getIsBlocked() {
+        return isBlocked;
+    }
+
+    public void setIsBlocked(Boolean isBlocked) {
+        this.isBlocked = isBlocked;
+    }
 }
