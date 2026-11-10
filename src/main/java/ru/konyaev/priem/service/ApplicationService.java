@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+/**
+ * Сервис бизнес-логики для работы с заявлениями абитуриентов
+ * (регистрация с проверкой квот и расписания, поиск, пагинация, смена статусов).
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,12 +45,17 @@ public class ApplicationService {
     private final DailyLimitRepository dailyLimitRepository;
     private final SettingsService settingsService;
 
+    /**
+     * Регистрация нового заявления абитуриента на выбранную дату и 10-минутный слот.
+     * Все ошибки валидации выбрасывают IllegalArgumentException (HTTP 400).
+     */
     @Transactional
     public Map<String, Object> register(RegisterApplicationRequest req) {
         if (req == null) {
             throw new IllegalArgumentException("Тело запроса отсутствует");
         }
 
+        // 1. Нормализация и базовая проверка обязательных полей
         String fio = req.getFio() != null ? req.getFio().trim() : "";
         String phone = req.getPhone() != null ? req.getPhone().trim() : "";
         String email = req.getEmail() != null ? req.getEmail().trim() : "";
@@ -71,6 +80,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Недопустимое время записи");
         }
 
+        // 2. Проверка корректности даты, прошедших дат и правила 24 часов
         LocalDate dateObj;
         try {
             dateObj = LocalDate.parse(date);
@@ -98,6 +108,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Запись на это время закрыта (требуется оформление минимум за " + advanceHours + " ч до приёма). Пожалуйста, выберите более позднее время или дату.");
         }
 
+        // 3. Проверка календарных ограничений (месяц, выходной, заблокированный день)
         if (!allowedMonthRepository.existsByYearAndMonth(dateObj.getYear(), dateObj.getMonthValue())) {
             throw new IllegalArgumentException("Запись на этот месяц недоступна");
         }
@@ -112,6 +123,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("Запись на эту дату недоступна");
         }
 
+        // 4. Проверка блокировки и вместимости конкретного слота
         SlotConfig slotCfg = slotConfigRepository.findByDateAndTime(date, time).orElse(null);
         if (slotCfg != null && Boolean.TRUE.equals(slotCfg.getIsBlocked())) {
             throw new IllegalArgumentException("Запись на это время недоступна");
@@ -120,10 +132,12 @@ public class ApplicationService {
         int maxCapacity = (slotCfg != null && slotCfg.getMaxCapacity() != null)
                 ? slotCfg.getMaxCapacity() : ApplicationConfig.DEFAULT_MAX_CAPACITY;
 
+        // 5. Защита от повторной записи тем же абитуриентом на одну дату
         if (applicationRepository.findExistingByDateAndPhoneOrEmail(date, phone, email).isPresent()) {
             throw new IllegalArgumentException("Вы уже записаны на эту дату");
         }
 
+        // 6. Проверка суточного лимита записей на день
         DailyLimit dailyLimitRow = dailyLimitRepository.findByDate(date).orElse(null);
         if (dailyLimitRow != null && dailyLimitRow.getMaxRegistrations() != null && dailyLimitRow.getMaxRegistrations() > 0) {
             long dailyCount = applicationRepository.countByRegistrationDate(date);
@@ -132,11 +146,13 @@ public class ApplicationService {
             }
         }
 
+        // 7. Проверка свободных мест в выбранном 10-минутном слоте
         long slotsCount = applicationRepository.countByRegistrationDateAndRegistrationTime(date, time);
         if (slotsCount >= maxCapacity) {
             throw new IllegalArgumentException("Извините, на это время мест больше нет");
         }
 
+        // 8. Сохранение заявки в PostgreSQL
         Application application = Application.builder()
                 .fio(fio)
                 .phone(phone)

@@ -17,6 +17,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис управления календарём приёма: проверка доступности дат и 10-минутных слотов,
+ * блокировка дней, открытие рабочих суббот/воскресений, квоты и разрешённые месяцы.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,12 +34,14 @@ public class CalendarService {
     private final ApplicationRepository applicationRepository;
     private final SettingsService settingsService;
 
+    /** Список годов и месяцев, открытых для подачи документов. */
     public List<AllowedMonthResponse> getAllowedMonths() {
         return allowedMonthRepository.findAllByOrderByYearAscMonthAsc().stream()
                 .map(m -> AllowedMonthResponse.builder().year(m.getYear()).month(m.getMonth()).build())
                 .toList();
     }
 
+    /** Возвращает статус каждого из 37 слотов и суточного лимита на конкретную дату. */
     public SlotsStatusResponse getSlotsStatus(String date) {
         validateDateString(date);
 

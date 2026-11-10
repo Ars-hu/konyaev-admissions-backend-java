@@ -3,12 +3,18 @@ package ru.konyaev.priem.config;
 import java.time.ZoneId;
 import java.util.List;
 
+/**
+ * Базовые константы и справочники расписания приёмной комиссии.
+ */
 public class ApplicationConfig {
 
+    /** Часовой пояс колледжа (Тверь / Москва). */
     public static final ZoneId ZONE_MOSCOW = ZoneId.of("Europe/Moscow");
 
+    /** Стандартная вместимость одного 10-минутного слота (человек). */
     public static final int DEFAULT_MAX_CAPACITY = 3;
 
+    /** Расписание приёма: 37 интервалов по 10 минут с 09:00 до 15:00. */
     public static final List<String> TIME_SLOTS = List.of(
             "09:00", "09:10", "09:20", "09:30", "09:40", "09:50",
             "10:00", "10:10", "10:20", "10:30", "10:40", "10:50",

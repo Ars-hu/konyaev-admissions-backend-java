@@ -15,6 +15,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Сервис формирования официальных ведомостей приёма в формате Excel (.xlsx)
+ * с помощью библиотеки Apache POI.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class ExportService {
 
     private static final DateTimeFormatter FORMATTER_DATETIME = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
+    /** Генерирует бинарное содержимое .xlsx файла (за все дни или за выбранную дату). */
     public byte[] exportApplicationsExcel(String filterDate) throws IOException {
         List<Application> apps = applicationService.getApplicationsForExport(filterDate);
 

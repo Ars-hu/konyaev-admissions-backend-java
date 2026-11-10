@@ -19,6 +19,9 @@ import ru.konyaev.priem.service.ArchiveService;
 
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер аутентификации администратора и выдачи JWT-токенов.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor

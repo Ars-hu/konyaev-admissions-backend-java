@@ -26,6 +26,10 @@ import ru.konyaev.priem.security.JwtAuthenticationFilter;
 
 import java.util.List;
 
+/**
+ * Конфигурация Spring Security 6: stateless JWT-авторизация, CORS, BCrypt
+ * и разграничение доступа (публичные маршруты абитуриента vs ROLE_ADMIN).
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -39,8 +43,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // Для REST API с JWT защита CSRF не требуется
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Единый JSON-ответ 401 при обращении к закрытым маршрутам без валидного токена
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);

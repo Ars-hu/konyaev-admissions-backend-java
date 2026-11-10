@@ -586,7 +586,7 @@
           </div>
 
           <div class="form-group">
-            <label>Свободные 10-минутные слоты (с 09:00 до 16:30):</label>
+            <label>Свободные 10-минутные слоты (с 09:00 до 15:00):</label>
             <div class="slots-container" id="slotsGrid">
               <div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-dim);">
                 Выберите дату для загрузки доступных интервалов времени
@@ -1451,9 +1451,10 @@ ${resText}`;
 
         const data = await res.json();
         const items = data.items || [];
-        totalPages = data.pages || 1;
+        totalPages = data.total_pages || data.pages || 1;
+        const pageNum = data.page || data.current_page || currentPage;
 
-        document.getElementById('paginationInfo').textContent = `Страница ${data.current_page} из ${totalPages} (Всего: ${data.total} заявок)`;
+        document.getElementById('paginationInfo').textContent = `Страница ${pageNum} из ${totalPages} (Всего: ${data.total} заявок)`;
         document.getElementById('prevPageBtn').disabled = currentPage <= 1;
         document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
 

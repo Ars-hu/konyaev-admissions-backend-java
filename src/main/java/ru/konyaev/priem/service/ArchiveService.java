@@ -25,6 +25,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сервис автоматического и ручного архивирования просроченных заявлений.
+ * Фоновая задача запускается каждые 5 минут (@Scheduled).
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class ArchiveService {
     private final ApplicationRepository applicationRepository;
     private final ArchivedApplicationRepository archivedApplicationRepository;
 
+    /** Переносит все заявки, время приёма которых уже наступило, в архивную таблицу. */
     @Transactional
     public int archiveExpired() {
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);

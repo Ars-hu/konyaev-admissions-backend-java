@@ -16,6 +16,9 @@ import ru.konyaev.priem.service.CalendarService;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Презентационный слой (публичный): эндпоинты для абитуриентов без авторизации.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor

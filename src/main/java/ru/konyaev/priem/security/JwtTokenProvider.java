@@ -18,6 +18,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+/**
+ * Утилита для генерации, подписи (HMAC-SHA256) и проверки JWT-токенов администратора.
+ */
 @Slf4j
 @Component
 public class JwtTokenProvider {
@@ -26,11 +29,13 @@ public class JwtTokenProvider {
     private final long expirationMs;
 
     public JwtTokenProvider(
-            @Value("${app.jwt.secret:f7a2d9e1b4c83f6a0d5e2b9c7f1a4e8d3b6c0f9a2e5d8b1c4f7a0e3d6b9c2f5}") String secret,
+            @Value("${app.jwt.secret:default_dev_jwt_secret_key_change_in_prod_32bytes}") String secret,
             @Value("${app.jwt.expiration-ms:86400000}") long expirationMs
     ) {
         this.expirationMs = expirationMs;
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        // Для HMAC-SHA256 требуется ключ длиной минимум 32 байта (256 бит)
         if (keyBytes.length < 32) {
             try {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -42,6 +47,7 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /** Создаёт JWT-токен на основе успешной аутентификации Spring Security. */
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         return generateToken(userPrincipal.getUsername(),
@@ -50,13 +56,14 @@ public class JwtTokenProvider {
                         .collect(Collectors.joining(",")));
     }
 
+    /** Генерирует подписанный JWT-токен со сроком действия (по умолчанию 24 часа). */
     public String generateToken(String username, String roles) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(username)
-                .claim("user", username) // Python Flask compatibility
+                .claim("user", username) // Дублируем логин для удобного чтения на клиенте
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -64,6 +71,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    /** Извлекает логин (username) из валидного JWT-токена. */
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)

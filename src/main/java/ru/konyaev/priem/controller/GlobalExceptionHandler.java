@@ -21,6 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+/**
+ * Централизованный перехватчик ошибок (@RestControllerAdvice).
+ * Преобразует любые исключения (ошибки валидации, неверный JSON, переполнение типов)
+ * в аккуратный JSON-ответ со статусом 4xx, исключая возврат 500 Internal Server Error.
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

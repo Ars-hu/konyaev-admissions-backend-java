@@ -22,6 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Административный контроллер (роль ROLE_ADMIN): управление заявками,
+ * календарём приёма, квотами, архивом и экспортом ведомостей в Excel.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
