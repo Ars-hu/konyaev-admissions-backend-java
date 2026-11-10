@@ -3,72 +3,63 @@ package ru.konyaev.priem.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import ru.konyaev.priem.dto.request.LoginRequest;
-import ru.konyaev.priem.dto.response.AuthResponse;
+import ru.konyaev.priem.dto.LoginRequest;
+import ru.konyaev.priem.entity.User;
+import ru.konyaev.priem.repository.UserRepository;
 import ru.konyaev.priem.security.JwtTokenProvider;
 import ru.konyaev.priem.service.ArchiveService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 /**
- * Контроллер аутентификации администратора и выдачи JWT-токенов.
+ * Вход администратора по логину и паролю с выдачей JWT-токена.
  */
 @RestController
-@Tag(name = "Authentication", description = "Авторизация администратора")
+@Tag(name = "Authentication", description = "Вход администратора")
 public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
-    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final ArchiveService archiveService;
 
     @Autowired
     public AuthController(
-            AuthenticationManager authenticationManager,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
             JwtTokenProvider tokenProvider,
             ArchiveService archiveService
     ) {
-        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.archiveService = archiveService;
     }
 
-    @Operation(summary = "Вход администратора", description = "Получение JWT токена для доступа к панели администратора")
-    @PostMapping(value = {"/api/admin/login", "/api/v1/auth/login"})
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                )
-        );
+    @Operation(summary = "Войти в панель администратора")
+    @PostMapping("/api/admin/login")
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
+        User admin = userRepository.findByUsername(loginRequest.getUsername()).orElse(null);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = tokenProvider.generateToken(authentication);
-
-        List<String> roleList = new ArrayList<>();
-        for (GrantedAuthority authority : authentication.getAuthorities()) {
-            roleList.add(authority.getAuthority());
+        // Проверяем, что пользователь существует и пароль совпадает с хешем в базе
+        if (admin == null || !passwordEncoder.matches(loginRequest.getPassword(), admin.getPasswordHash())) {
+            throw new BadCredentialsException("Неверный логин или пароль");
         }
-        String roles = String.join(",", roleList);
 
-        // Запускаем архивацию просроченных записей при входе в панель
+        String token = tokenProvider.generateToken(admin.getUsername(), admin.getRole());
+
+        // Заодно переносим просроченные записи в архив
         archiveService.archiveExpired();
 
-        log.info("Admin login successful: {}", loginRequest.getUsername());
-
-        return ResponseEntity.ok(new AuthResponse(token, loginRequest.getUsername(), roles));
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "username", admin.getUsername(),
+                "role", admin.getRole()
+        ));
     }
 }

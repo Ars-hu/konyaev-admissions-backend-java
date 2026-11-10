@@ -3,7 +3,7 @@ package ru.konyaev.priem.entity;
 import jakarta.persistence.*;
 
 /**
- * Таблица администраторов приёмной комиссии (таблица admin).
+ * Таблица администраторов (таблица admin).
  */
 @Entity
 @Table(name = "admin")
@@ -19,18 +19,10 @@ public class User {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 30)
-    private Role role = Role.ROLE_ADMIN;
+    private String role = "ROLE_ADMIN";
 
     public User() {
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.role == null) {
-            this.role = Role.ROLE_ADMIN;
-        }
     }
 
     public Long getId() {
@@ -57,11 +49,11 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public Role getRole() {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    public void setRole(String role) {
         this.role = role;
     }
 }

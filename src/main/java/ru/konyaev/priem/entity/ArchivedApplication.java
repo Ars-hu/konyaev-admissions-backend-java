@@ -1,21 +1,21 @@
 package ru.konyaev.priem.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * Таблица архивных заявлений (переносятся сюда после прохождения времени приёма).
+ * Таблица архивных заявлений (archived_application).
  */
 @Entity
-@Table(name = "archived_application", indexes = {
-        @Index(name = "idx_arch_reg_date", columnList = "registration_date")
-})
+@Table(name = "archived_application")
 public class ArchivedApplication {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonProperty("original_id")
     @Column(name = "original_id", nullable = false)
     private Long originalId;
 
@@ -28,29 +28,26 @@ public class ArchivedApplication {
     @Column(nullable = false, length = 100)
     private String email;
 
+    @JsonProperty("registration_date")
     @Column(name = "registration_date", nullable = false, length = 20)
     private String registrationDate;
 
+    @JsonProperty("registration_time")
     @Column(name = "registration_time", nullable = false, length = 10)
     private String registrationTime;
 
     @Column(nullable = false, length = 20)
     private String status = "pending";
 
+    @JsonProperty("created_at")
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @JsonProperty("archived_at")
     @Column(name = "archived_at", nullable = false)
     private Instant archivedAt = Instant.now();
 
     public ArchivedApplication() {
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.archivedAt == null) {
-            this.archivedAt = Instant.now();
-        }
     }
 
     public Long getId() {

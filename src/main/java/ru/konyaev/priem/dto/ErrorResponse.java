@@ -1,9 +1,12 @@
-package ru.konyaev.priem.dto.response;
+package ru.konyaev.priem.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * Единый формат JSON-ответа при любой ошибке (400, 401, 403, 404).
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
 

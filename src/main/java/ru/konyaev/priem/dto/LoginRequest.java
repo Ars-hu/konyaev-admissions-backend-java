@@ -1,7 +1,10 @@
-package ru.konyaev.priem.dto.request;
+package ru.konyaev.priem.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * Логин и пароль для входа администратора (POST /api/admin/login).
+ */
 public class LoginRequest {
 
     @NotBlank(message = "Имя пользователя обязательно")

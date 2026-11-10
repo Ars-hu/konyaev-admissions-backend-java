@@ -1,7 +1,5 @@
 package ru.konyaev.priem.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ru.konyaev.priem.config.ApplicationConfig;
-import ru.konyaev.priem.dto.response.ArchivedApplicationResponse;
-import ru.konyaev.priem.dto.response.PageResponse;
 import ru.konyaev.priem.entity.Application;
 import ru.konyaev.priem.entity.ArchivedApplication;
 import ru.konyaev.priem.repository.ApplicationRepository;
@@ -23,16 +19,15 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Сервис автоматического и ручного архивирования просроченных заявлений.
- * Фоновая задача запускается каждые 5 минут (@Scheduled).
+ * Сервис автоматического переноса старых заявок в архивную таблицу.
  */
 @Service
 public class ArchiveService {
-
-    private static final Logger log = LoggerFactory.getLogger(ArchiveService.class);
 
     private final ApplicationRepository applicationRepository;
     private final ArchivedApplicationRepository archivedApplicationRepository;
@@ -46,7 +41,7 @@ public class ArchiveService {
         this.archivedApplicationRepository = archivedApplicationRepository;
     }
 
-    /** Переносит заявки, время приёма которых уже наступило, в архивную таблицу. */
+    /** Переносит заявки, время которых уже прошло, в архив. */
     @Transactional
     public int archiveExpired() {
         ZonedDateTime now = ZonedDateTime.now(ApplicationConfig.ZONE_MOSCOW);
@@ -75,27 +70,19 @@ public class ArchiveService {
 
         archivedApplicationRepository.saveAll(toArchive);
         applicationRepository.deleteAll(expired);
-
-        log.info("Archive: moved {} expired application(s) to archive", expired.size());
         return expired.size();
     }
 
-    /** Запускается фоном каждые 5 минут (300 000 миллисекунд). */
+    /** Фоновая задача: запускается каждые 5 минут. */
     @Scheduled(fixedDelay = 300000)
     public void scheduledArchive() {
         try {
-            int count = archiveExpired();
-            if (count > 0) {
-                log.info("Scheduled archive completed: {} applications archived", count);
-            }
-        } catch (Exception e) {
-            log.error("Scheduled archive error: {}", e.getMessage());
+            archiveExpired();
+        } catch (Exception ignored) {
         }
     }
 
-    public PageResponse<ArchivedApplicationResponse> getArchive(
-            int page, int pageSize, String search, String sortField, String order
-    ) {
+    public Map<String, Object> getArchive(int page, int pageSize, String search, String sortField, String order) {
         int safePage = Math.max(1, Math.min(page, 10000));
         int safePageSize = Math.max(1, Math.min(200, pageSize));
 
@@ -124,32 +111,12 @@ public class ArchiveService {
             resultPage = archivedApplicationRepository.findAll(pageable);
         }
 
-        List<ArchivedApplicationResponse> items = new ArrayList<>();
-        for (ArchivedApplication a : resultPage.getContent()) {
-            items.add(mapToResponse(a));
-        }
-
-        PageResponse<ArchivedApplicationResponse> response = new PageResponse<>();
-        response.setItems(items);
-        response.setTotal(resultPage.getTotalElements());
-        response.setPage(safePage);
-        response.setPageSize(safePageSize);
-        response.setTotalPages(Math.max(1, resultPage.getTotalPages()));
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("items", resultPage.getContent());
+        response.put("total", resultPage.getTotalElements());
+        response.put("page", safePage);
+        response.put("page_size", safePageSize);
+        response.put("total_pages", Math.max(1, resultPage.getTotalPages()));
         return response;
-    }
-
-    private ArchivedApplicationResponse mapToResponse(ArchivedApplication a) {
-        ArchivedApplicationResponse dto = new ArchivedApplicationResponse();
-        dto.setId(a.getId());
-        dto.setOriginalId(a.getOriginalId());
-        dto.setFio(a.getFio());
-        dto.setPhone(a.getPhone());
-        dto.setEmail(a.getEmail());
-        dto.setRegistrationDate(a.getRegistrationDate());
-        dto.setRegistrationTime(a.getRegistrationTime());
-        dto.setStatus(a.getStatus());
-        dto.setCreatedAt(a.getCreatedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        dto.setArchivedAt(a.getArchivedAt().atZone(ApplicationConfig.ZONE_MOSCOW).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        return dto;
     }
 }

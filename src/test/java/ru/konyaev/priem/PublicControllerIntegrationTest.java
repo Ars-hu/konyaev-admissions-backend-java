@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.konyaev.priem.dto.request.RegisterApplicationRequest;
+import ru.konyaev.priem.dto.RegisterRequest;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -46,7 +46,7 @@ public class PublicControllerIntegrationTest {
     @Test
     @DisplayName("POST /api/register validates required fields and returns 400")
     void testRegisterValidationFailure() throws Exception {
-        RegisterApplicationRequest emptyReq = new RegisterApplicationRequest();
+        RegisterRequest emptyReq = new RegisterRequest();
 
         mockMvc.perform(post("/api/register")
                         .contentType(MediaType.APPLICATION_JSON)

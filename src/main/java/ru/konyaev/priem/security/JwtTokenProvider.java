@@ -4,29 +4,20 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
- * Утилита для генерации, подписи (HMAC-SHA256) и проверки JWT-токенов администратора.
+ * Создание и проверка JWT-токенов (подпись HMAC-SHA256).
  */
 @Component
 public class JwtTokenProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     private final SecretKey secretKey;
     private final long expirationMs;
@@ -38,60 +29,53 @@ public class JwtTokenProvider {
         this.expirationMs = expirationMs;
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
 
-        // Для HMAC-SHA256 требуется ключ длиной минимум 32 байта (256 бит)
+        // Для подписи нужен ключ минимум 32 байта — при коротком ключе расширяем через SHA-256
         if (keyBytes.length < 32) {
             try {
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                keyBytes = md.digest(keyBytes);
+                keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("SHA-256 algorithm not available", e);
+                throw new RuntimeException(e);
             }
         }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /** Создаёт JWT-токен на основе успешной аутентификации Spring Security. */
-    public String generateToken(Authentication authentication) {
-        UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
-        List<String> roleList = new ArrayList<>();
-        for (GrantedAuthority authority : userPrincipal.getAuthorities()) {
-            roleList.add(authority.getAuthority());
-        }
-        String roles = String.join(",", roleList);
-        return generateToken(userPrincipal.getUsername(), roles);
-    }
-
-    /** Генерирует подписанный JWT-токен со сроком действия (по умолчанию 24 часа). */
-    public String generateToken(String username, String roles) {
+    /** Создаёт JWT-токен для администратора. */
+    public String generateToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
                 .subject(username)
-                .claim("user", username)
-                .claim("roles", roles)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
     }
 
-    /** Извлекает логин (username) из валидного JWT-токена. */
+    /** Достаёт логин из валидного токена. */
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-        String userClaim = claims.get("user", String.class);
-        if (userClaim != null && !userClaim.isBlank()) {
-            return userClaim;
-        }
         return claims.getSubject();
     }
 
-    /** Проверяет подпись и срок действия токена. */
+    /** Достаёт роль из валидного токена. */
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        String role = claims.get("role", String.class);
+        return (role != null && !role.isBlank()) ? role : "ROLE_ADMIN";
+    }
+
+    /** Проверяет, не подделан ли токен и не истёк ли его срок. */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -100,7 +84,6 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }

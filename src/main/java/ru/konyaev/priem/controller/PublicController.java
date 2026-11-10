@@ -7,8 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.konyaev.priem.dto.request.RegisterApplicationRequest;
-import ru.konyaev.priem.dto.response.*;
+import ru.konyaev.priem.dto.RegisterRequest;
 import ru.konyaev.priem.service.ApplicationService;
 import ru.konyaev.priem.service.CalendarService;
 
@@ -16,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Презентационный слой (публичный): эндпоинты для абитуриентов без авторизации.
+ * Контроллер для абитуриентов (публичный доступ без авторизации).
  */
 @RestController
-@Tag(name = "Public API", description = "Публичные методы для абитуриентов: запись, календарь, слоты")
+@Tag(name = "Public API", description = "Запись абитуриентов на приём и просмотр расписания")
 public class PublicController {
 
     private final ApplicationService applicationService;
@@ -31,28 +30,28 @@ public class PublicController {
         this.calendarService = calendarService;
     }
 
-    @Operation(summary = "Регистрация заявления абитуриента", description = "Создание новой заявки на подачу документов")
-    @PostMapping(value = {"/api/register", "/api/v1/applications/register"})
-    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterApplicationRequest req) {
+    @Operation(summary = "Записаться на приём")
+    @PostMapping("/api/register")
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest req) {
         Map<String, Object> result = applicationService.register(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @Operation(summary = "Статус доступных дат для записи", description = "Список заблокированных, заполненных дат и открытых выходных")
-    @GetMapping(value = {"/api/dates-status", "/api/v1/calendar/dates-status"})
-    public ResponseEntity<DatesStatusResponse> getDatesStatus() {
+    @Operation(summary = "Статус дат календаря")
+    @GetMapping("/api/dates-status")
+    public ResponseEntity<Map<String, Object>> getDatesStatus() {
         return ResponseEntity.ok(calendarService.getDatesStatus());
     }
 
-    @Operation(summary = "Статус слотов на выбранную дату", description = "Количество мест и занятость 10-минутных интервалов")
-    @GetMapping(value = {"/api/slots-status/{date}", "/api/v1/calendar/slots-status/{date}"})
-    public ResponseEntity<SlotsStatusResponse> getSlotsStatus(@PathVariable String date) {
+    @Operation(summary = "Статус 10-минутных слотов на дату")
+    @GetMapping("/api/slots-status/{date}")
+    public ResponseEntity<Map<String, Object>> getSlotsStatus(@PathVariable String date) {
         return ResponseEntity.ok(calendarService.getSlotsStatus(date));
     }
 
-    @Operation(summary = "Список открытых месяцев для приёма", description = "Месяцы, доступные для подачи заявлений")
-    @GetMapping(value = {"/api/allowed-months", "/api/v1/calendar/allowed-months"})
-    public ResponseEntity<List<AllowedMonthResponse>> getAllowedMonths() {
+    @Operation(summary = "Список открытых месяцев для записи")
+    @GetMapping("/api/allowed-months")
+    public ResponseEntity<List<Map<String, Object>>> getAllowedMonths() {
         return ResponseEntity.ok(calendarService.getAllowedMonths());
     }
 }

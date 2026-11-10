@@ -7,12 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,14 +18,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import ru.konyaev.priem.dto.response.ErrorResponse;
+import ru.konyaev.priem.dto.ErrorResponse;
 import ru.konyaev.priem.security.JwtAuthenticationFilter;
 
 import java.util.List;
 
 /**
- * Конфигурация Spring Security 6: stateless JWT-авторизация, CORS, BCrypt
- * и разграничение доступа (публичные маршруты абитуриента и защищённые маршруты ROLE_ADMIN).
+ * Настройки Spring Security: открытые маршруты для абитуриентов и защита /api/admin/** токеном JWT.
  */
 @Configuration
 @EnableWebSecurity
@@ -48,9 +44,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable) // Для REST API с JWT защита CSRF не требуется
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Единый JSON-ответ 401 при обращении к закрытым маршрутам без валидного токена
+                // Если к закрытому URL обратились без токена — возвращаем JSON со статусом 401
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -59,19 +55,14 @@ public class SecurityConfig {
                     response.getWriter().write(objectMapper.writeValueAsString(err));
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        // Статические ресурсы и тестовый веб-интерфейс
-                        .requestMatchers("/", "/index.html", "/favicon.ico", "/static/**", "/css/**", "/js/**", "/test/**", "/demo/**", "/java/**").permitAll()
-                        // Публичные эндпоинты для абитуриентов
+                        // Статический сайт и Swagger UI
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/java/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Публичные маршруты абитуриента
                         .requestMatchers(HttpMethod.POST, "/api/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/dates-status").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/slots-status/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/allowed-months").permitAll()
-                        // Авторизация администратора
+                        .requestMatchers(HttpMethod.GET, "/api/dates-status", "/api/slots-status/**", "/api/allowed-months").permitAll()
+                        // Вход администратора
                         .requestMatchers(HttpMethod.POST, "/api/admin/login").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        // Swagger UI / OpenAPI 3.0
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Все методы администратора
+                        // Всё остальное в /api/admin/** — только для роли ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -96,10 +87,5 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
     }
 }

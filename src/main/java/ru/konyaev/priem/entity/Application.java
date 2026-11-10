@@ -1,5 +1,6 @@
 package ru.konyaev.priem.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -7,11 +8,7 @@ import java.time.Instant;
  * Таблица активных заявлений абитуриентов (application).
  */
 @Entity
-@Table(name = "application", indexes = {
-        @Index(name = "idx_app_reg_date", columnList = "registration_date"),
-        @Index(name = "idx_app_phone", columnList = "phone"),
-        @Index(name = "idx_app_email", columnList = "email")
-})
+@Table(name = "application")
 public class Application {
 
     @Id
@@ -27,12 +24,15 @@ public class Application {
     @Column(nullable = false, length = 100)
     private String email;
 
+    @JsonProperty("registration_date")
     @Column(name = "registration_date", nullable = false, length = 20)
     private String registrationDate;
 
+    @JsonProperty("registration_time")
     @Column(name = "registration_time", nullable = false, length = 10)
     private String registrationTime;
 
+    @JsonProperty("created_at")
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -40,16 +40,6 @@ public class Application {
     private String status = "pending";
 
     public Application() {
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = Instant.now();
-        }
-        if (this.status == null) {
-            this.status = "pending";
-        }
     }
 
     public Long getId() {

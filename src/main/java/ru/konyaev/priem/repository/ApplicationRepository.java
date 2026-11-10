@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Репозиторий для работы с таблицей активных заявлений (application).
+ * Репозиторий для работы с таблицей заявлений (application).
  */
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
@@ -36,7 +36,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
            "LOWER(a.registrationTime) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Application> searchApplications(@Param("search") String search, Pageable pageable);
 
-    /** Проверка, записан ли уже человек с таким телефоном или email на указанную дату. */
+    /** Проверка, записан ли уже человек с таким телефоном или email на эту дату. */
     @Query("SELECT a FROM Application a WHERE a.registrationDate = :date AND (a.phone = :phone OR a.email = :email)")
     Optional<Application> findExistingByDateAndPhoneOrEmail(
             @Param("date") String date,
@@ -50,17 +50,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("today") String today,
             @Param("currentTime") String currentTime
     );
-
-    interface SlotCountView {
-        String getDate();
-        String getTime();
-        Long getCount();
-    }
-
-    /** Подсчёт количества записей для каждой пары (дата, время). */
-    @Query("SELECT a.registrationDate as date, a.registrationTime as time, COUNT(a.id) as count " +
-           "FROM Application a GROUP BY a.registrationDate, a.registrationTime")
-    List<SlotCountView> countGroupedByDateAndTime();
 
     boolean existsByRegistrationDateStartingWith(String prefix);
 }

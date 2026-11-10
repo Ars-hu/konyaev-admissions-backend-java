@@ -3,12 +3,13 @@ package ru.konyaev.priem.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.konyaev.priem.dto.response.SiteSettingsResponse;
 import ru.konyaev.priem.entity.SiteSetting;
 import ru.konyaev.priem.repository.SiteSettingRepository;
 
+import java.util.Map;
+
 /**
- * Сервис для чтения и изменения глобальных настроек системы (таблица site_settings).
+ * Сервис для чтения и сохранения глобальных настроек (таблица site_settings).
  */
 @Service
 public class SettingsService {
@@ -28,7 +29,7 @@ public class SettingsService {
         return defaultValue;
     }
 
-    /** Возвращает количество часов, за которое нужно записываться на приём (по умолчанию 24). */
+    /** Возвращает правило заблаговременной записи (по умолчанию 24 часа). */
     public int getAdvanceHours() {
         try {
             return Integer.parseInt(get("advance_hours", "24"));
@@ -49,15 +50,15 @@ public class SettingsService {
     }
 
     @Transactional
-    public SiteSettingsResponse updateAdvanceHours(int advanceHours) {
-        if (advanceHours < 0) {
-            throw new IllegalArgumentException("Часы не могут быть отрицательными");
+    public Map<String, Object> updateAdvanceHours(int advanceHours) {
+        if (advanceHours < 0 || advanceHours > 720) {
+            throw new IllegalArgumentException("Часы должны быть в диапазоне от 0 до 720");
         }
         set("advance_hours", String.valueOf(advanceHours));
-        return new SiteSettingsResponse(advanceHours);
+        return Map.of("advance_hours", advanceHours);
     }
 
-    public SiteSettingsResponse getSettings() {
-        return new SiteSettingsResponse(getAdvanceHours());
+    public Map<String, Object> getSettings() {
+        return Map.of("advance_hours", getAdvanceHours());
     }
 }

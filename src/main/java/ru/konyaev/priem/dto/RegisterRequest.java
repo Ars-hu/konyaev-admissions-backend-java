@@ -1,11 +1,14 @@
-package ru.konyaev.priem.dto.request;
+package ru.konyaev.priem.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class RegisterApplicationRequest {
+/**
+ * Данные, которые абитуриент отправляет с формы записи (POST /api/register).
+ */
+public class RegisterRequest {
 
     @NotBlank(message = "ФИО обязательно для заполнения")
     @Size(max = 255, message = "ФИО не может быть длиннее 255 символов")
@@ -30,7 +33,7 @@ public class RegisterApplicationRequest {
     @JsonProperty("registration_time")
     private String registrationTime;
 
-    public RegisterApplicationRequest() {
+    public RegisterRequest() {
     }
 
     public String getFio() {

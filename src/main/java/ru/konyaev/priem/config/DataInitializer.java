@@ -1,14 +1,11 @@
 package ru.konyaev.priem.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.konyaev.priem.entity.AllowedMonth;
-import ru.konyaev.priem.entity.Role;
 import ru.konyaev.priem.entity.User;
 import ru.konyaev.priem.repository.AllowedMonthRepository;
 import ru.konyaev.priem.repository.UserRepository;
@@ -18,13 +15,10 @@ import ru.konyaev.priem.service.SettingsService;
 import java.time.LocalDate;
 
 /**
- * Инициализатор начальных данных при запуске приложения:
- * архивация старых записей, добавление разрешённых месяцев, создание администратора и настроек.
+ * Выполняется один раз при запуске сервера: создаёт администратора, настройки по умолчанию и месяцы приёма.
  */
 @Component
 public class DataInitializer implements CommandLineRunner {
-
-    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final AllowedMonthRepository allowedMonthRepository;
@@ -55,80 +49,42 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("Starting Konyaev College Admissions Backend initialization...");
+        // 1. Архивируем старые заявки при старте
+        archiveService.archiveExpired();
 
-        // 1. Автоматическая архивация просроченных записей
-        try {
-            archiveService.archiveExpired();
-        } catch (Exception e) {
-            log.warn("Startup archive check failed: {}", e.getMessage());
+        // 2. Открываем текущий, следующий месяц и летнюю кампанию (июнь, июль, август)
+        LocalDate today = LocalDate.now(ApplicationConfig.ZONE_MOSCOW);
+        addMonthIfMissing(today.getYear(), today.getMonthValue());
+        LocalDate nextMonth = today.plusMonths(1);
+        addMonthIfMissing(nextMonth.getYear(), nextMonth.getMonthValue());
+
+        int campaignYear = (today.getMonthValue() > 8) ? today.getYear() + 1 : today.getYear();
+        addMonthIfMissing(campaignYear, 6);
+        addMonthIfMissing(campaignYear, 7);
+        addMonthIfMissing(campaignYear, 8);
+
+        // 3. Создаём или обновляем администратора с зашифрованным паролем BCrypt
+        User admin = userRepository.findByUsername(adminUsername).orElse(null);
+        if (admin == null) {
+            admin = new User();
+            admin.setUsername(adminUsername);
         }
+        admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+        admin.setRole("ROLE_ADMIN");
+        userRepository.save(admin);
 
-        // 2. Инициализация разрешённых месяцев (текущий, следующий и летняя кампания)
-        try {
-            LocalDate today = LocalDate.now(ApplicationConfig.ZONE_MOSCOW);
-            int currentYear = today.getYear();
-            int currentMonth = today.getMonthValue();
-
-            // Текущий и следующий месяц для круглогодичной работы
-            if (!allowedMonthRepository.existsByYearAndMonth(currentYear, currentMonth)) {
-                AllowedMonth current = new AllowedMonth();
-                current.setYear(currentYear);
-                current.setMonth(currentMonth);
-                allowedMonthRepository.save(current);
-            }
-
-            int nextMonth = currentMonth == 12 ? 1 : currentMonth + 1;
-            int nextYear = currentMonth == 12 ? currentYear + 1 : currentYear;
-            if (!allowedMonthRepository.existsByYearAndMonth(nextYear, nextMonth)) {
-                AllowedMonth next = new AllowedMonth();
-                next.setYear(nextYear);
-                next.setMonth(nextMonth);
-                allowedMonthRepository.save(next);
-            }
-
-            // Основные месяцы летней приёмной кампании (июнь, июль, август)
-            int campaignYear = (currentMonth > 8) ? currentYear + 1 : currentYear;
-            for (int m : new int[]{6, 7, 8}) {
-                if (!allowedMonthRepository.existsByYearAndMonth(campaignYear, m)) {
-                    AllowedMonth summer = new AllowedMonth();
-                    summer.setYear(campaignYear);
-                    summer.setMonth(m);
-                    allowedMonthRepository.save(summer);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to initialize allowed months: {}", e.getMessage());
+        // 4. Настройка буфера записи за 24 часа
+        if (settingsService.get("advance_hours", null) == null) {
+            settingsService.set("advance_hours", "24");
         }
+    }
 
-        // 3. Создание или обновление учётной записи администратора
-        try {
-            User admin = userRepository.findByUsername(adminUsername).orElse(null);
-            if (admin == null) {
-                admin = new User();
-                admin.setUsername(adminUsername);
-                admin.setPasswordHash(passwordEncoder.encode(adminPassword));
-                admin.setRole(Role.ROLE_ADMIN);
-                userRepository.save(admin);
-                log.info("Initialized default administrator account: {}", adminUsername);
-            } else {
-                admin.setPasswordHash(passwordEncoder.encode(adminPassword));
-                admin.setRole(Role.ROLE_ADMIN);
-                userRepository.save(admin);
-            }
-        } catch (Exception e) {
-            log.error("Failed to initialize admin account: {}", e.getMessage());
+    private void addMonthIfMissing(int year, int month) {
+        if (!allowedMonthRepository.existsByYearAndMonth(year, month)) {
+            AllowedMonth m = new AllowedMonth();
+            m.setYear(year);
+            m.setMonth(month);
+            allowedMonthRepository.save(m);
         }
-
-        // 4. Настройки по умолчанию
-        try {
-            if (settingsService.get("advance_hours", null) == null) {
-                settingsService.set("advance_hours", "24");
-            }
-        } catch (Exception e) {
-            log.warn("Failed to initialize default settings: {}", e.getMessage());
-        }
-
-        log.info("Konyaev College Admissions Backend initialized successfully!");
     }
 }
