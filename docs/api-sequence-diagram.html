@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Диаграмма последовательностей API — Приёмная комиссия</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1280px;
+    height: 1150px;
+    background: #181a18;
+    font-family: "Inter", "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+<svg width="1280" height="1150" viewBox="0 0 1280 1150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow-green-solid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#1db982" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-green-dashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#158c63" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-orange-solid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#d96236" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-orange-dashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#a64a27" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="1150" fill="#181a18"/>
+
+  <!-- Lifelines (span = 470px per half) -->
+  <line x1="170" y1="80" x2="170" y2="1122" stroke="#4f524f" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <line x1="640" y1="80" x2="640" y2="1122" stroke="#4f524f" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <line x1="1110" y1="80" x2="1110" y2="1122" stroke="#4f524f" stroke-width="1.5" stroke-dasharray="5,5"/>
+
+  <!-- Role Headers -->
+  <rect x="65" y="28" width="210" height="52" rx="8" fill="#135e48" stroke="#1d7d60" stroke-width="1"/>
+  <text x="170" y="60" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="600">Абитуриент</text>
+
+  <rect x="535" y="28" width="210" height="52" rx="8" fill="#414341" stroke="#575a57" stroke-width="1"/>
+  <text x="640" y="60" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="600">Сервер</text>
+
+  <rect x="1005" y="28" width="210" height="52" rx="8" fill="#6a371f" stroke="#8a4a2c" stroke-width="1"/>
+  <text x="1110" y="60" text-anchor="middle" fill="#ffffff" font-size="19" font-weight="600">Администратор</text>
+
+  <!-- Step 1 -->
+  <text x="188" y="114" fill="#ffffff" font-size="15.5" font-weight="700">1. GET /api/allowed-months</text>
+  <line x1="170" y1="126" x2="638" y2="126" stroke="#1db982" stroke-width="2" marker-end="url(#arrow-green-solid)"/>
+  <text x="188" y="148" fill="#d0d4d0" font-size="13.5">Зачем: узнать открытые месяцы приёма</text>
+  <text x="188" y="168" fill="#9ea39e" font-size="13.5">year, month → задают границы календаря (шаг 2)</text>
+  <line x1="640" y1="180" x2="172" y2="180" stroke="#158c63" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-green-dashed)"/>
+
+  <!-- Step 2 -->
+  <text x="188" y="216" fill="#ffffff" font-size="15.5" font-weight="700">2. GET /api/dates-status</text>
+  <line x1="170" y1="228" x2="638" y2="228" stroke="#1db982" stroke-width="2" marker-end="url(#arrow-green-solid)"/>
+  <text x="188" y="250" fill="#d0d4d0" font-size="13.5">Зачем: увидеть свободные, занятые и закрытые дни</text>
+  <text x="188" y="270" fill="#9ea39e" font-size="13.5">Доступная date (YYYY-MM-DD) → в шаг 3</text>
+  <line x1="640" y1="282" x2="172" y2="282" stroke="#158c63" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-green-dashed)"/>
+
+  <!-- Step 3 -->
+  <text x="188" y="318" fill="#ffffff" font-size="15.5" font-weight="700">3. GET /api/slots-status/{date}</text>
+  <line x1="170" y1="330" x2="638" y2="330" stroke="#1db982" stroke-width="2" marker-end="url(#arrow-green-solid)"/>
+  <text x="188" y="352" fill="#d0d4d0" font-size="13.5">Зачем: выбрать свободный 10-мин слот (09:00–15:00)</text>
+  <text x="188" y="372" fill="#9ea39e" font-size="13.5">date + time → передаются в шаг 4</text>
+  <line x1="640" y1="384" x2="172" y2="384" stroke="#158c63" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-green-dashed)"/>
+
+  <!-- Step 4 -->
+  <text x="188" y="420" fill="#ffffff" font-size="15.5" font-weight="700">4. POST /api/register</text>
+  <line x1="170" y1="432" x2="638" y2="432" stroke="#1db982" stroke-width="2" marker-end="url(#arrow-green-solid)"/>
+  <text x="188" y="454" fill="#d0d4d0" font-size="13.5">Зачем: подать заявку (правило 24 ч, квот и дублей)</text>
+  <text x="188" y="474" fill="#9ea39e" font-size="13.5">id, статус pending → сохраняется в БД, в шаг 6</text>
+  <line x1="640" y1="486" x2="172" y2="486" stroke="#158c63" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-green-dashed)"/>
+
+  <!-- Step 5 -->
+  <text x="658" y="522" fill="#ffffff" font-size="15.5" font-weight="700">5. POST /api/admin/login</text>
+  <line x1="1110" y1="534" x2="642" y2="534" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="556" fill="#d0d4d0" font-size="13.5">Зачем: войти в панель администратора</text>
+  <text x="658" y="576" fill="#9ea39e" font-size="13.5">token (JWT) → в заголовок Authorization (шаги 6–10)</text>
+  <line x1="640" y1="588" x2="1108" y2="588" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+
+  <!-- Step 6 -->
+  <text x="658" y="624" fill="#ffffff" font-size="15.5" font-weight="700">6. GET /api/admin/applications</text>
+  <line x1="1110" y1="636" x2="642" y2="636" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="658" fill="#d0d4d0" font-size="13.5">Зачем: увидеть активные заявки (поиск и страницы)</text>
+  <text x="658" y="678" fill="#9ea39e" font-size="13.5">id заявки, статус pending → в шаги 7 и 9</text>
+  <line x1="640" y1="690" x2="1108" y2="690" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+
+  <!-- Step 7 -->
+  <text x="658" y="726" fill="#ffffff" font-size="15.5" font-weight="700">7. PATCH /api/admin/applications/{id}/status</text>
+  <line x1="1110" y1="738" x2="642" y2="738" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="760" fill="#d0d4d0" font-size="13.5">Зачем: подтвердить или отклонить заявку</text>
+  <text x="658" y="780" fill="#9ea39e" font-size="13.5">Статус confirmed / rejected → отражается в шаге 9</text>
+  <line x1="640" y1="792" x2="1108" y2="792" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+
+  <!-- Step 8 -->
+  <text x="658" y="828" fill="#ffffff" font-size="15.5" font-weight="700">8. POST /api/admin/update-slot</text>
+  <line x1="1110" y1="840" x2="642" y2="840" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="862" fill="#d0d4d0" font-size="13.5">Зачем: изменить вместимость или закрыть слот</text>
+  <text x="658" y="882" fill="#9ea39e" font-size="13.5">max_capacity / is_blocked → сразу видно в шаге 3</text>
+  <line x1="640" y1="894" x2="1108" y2="894" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+
+  <!-- Step 9 -->
+  <text x="658" y="930" fill="#ffffff" font-size="15.5" font-weight="700">9. GET /api/admin/applications/export/excel</text>
+  <line x1="1110" y1="942" x2="642" y2="942" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="964" fill="#d0d4d0" font-size="13.5">Зачем: выгрузить ведомость заявок в .xlsx</text>
+  <text x="658" y="984" fill="#9ea39e" font-size="13.5">Файл Excel (Apache POI) → отчёт приёмной комиссии</text>
+  <line x1="640" y1="996" x2="1108" y2="996" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+
+  <!-- Step 10 -->
+  <text x="658" y="1032" fill="#ffffff" font-size="15.5" font-weight="700">10. POST /api/admin/archive/run</text>
+  <line x1="1110" y1="1044" x2="642" y2="1044" stroke="#d96236" stroke-width="2" marker-end="url(#arrow-orange-solid)"/>
+  <text x="658" y="1066" fill="#d0d4d0" font-size="13.5">Зачем: перенести прошедшие заявки в архив</text>
+  <text x="658" y="1086" fill="#9ea39e" font-size="13.5">archived_count → очищает шаг 6, в GET /api/admin/archive</text>
+  <line x1="640" y1="1098" x2="1108" y2="1098" stroke="#a64a27" stroke-width="1.6" stroke-dasharray="5,5" marker-end="url(#arrow-orange-dashed)"/>
+</svg>
+</body>
+</html>
