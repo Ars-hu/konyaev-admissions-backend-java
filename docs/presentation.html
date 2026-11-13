@@ -390,20 +390,21 @@
 
   .er-diagram-container {
     width: 100%;
-    height: 720px;
-    background: #18191d;
-    border: 1px solid var(--g-border-strong);
-    border-radius: 24px;
+    height: 780px;
+    background: transparent;
+    border: none;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   }
   .er-diagram-container img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    border-radius: 18px;
+    border: 1px solid var(--g-border-strong);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
   }
 </style>
 </head>
@@ -633,11 +634,11 @@
           </div>
           <div>
             <div class="card-title">2. Приёмная комиссия колледжа</div>
-            <div style="font-size: 15px; color: var(--g-red);">Внутренние пользователи: администраторы комиссии и руководство</div>
+            <div style="font-size: 15px; color: var(--g-red);">Внутренние пользователи системы</div>
           </div>
         </div>
         <div class="card-desc">
-          Сотрудники секретариата приёмной комиссии, ответственный секретарь и администрация колледжа им. А.Н. Коняева, ведущие приём документов и учёт контингента.
+          Сотрудники приёмной комиссии колледжа им. А.Н. Коняева, осуществляющие проверку документов, утверждение броней и зачисление абитуриентов.
         </div>
         <ul class="bullet-list">
           <li class="bullet-item">
@@ -707,7 +708,7 @@
         <tr>
           <td>
             <strong style="color: #ffffff; font-size: 19px;">Приёмная комиссия колледжа</strong>
-            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Секретариат и руководство комиссии</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Сотрудники приёмной комиссии</div>
           </td>
           <td><span class="role-pill admin">ROLE_ADMIN</span></td>
           <td>
@@ -800,7 +801,7 @@
           </div>
           <div>
             <div class="card-title">Экспорт в Excel и Автоархивация</div>
-            <div style="font-size: 15px; color: var(--g-red);">Автоматизация рутинных задач секретариата</div>
+            <div style="font-size: 15px; color: var(--g-red);">Автоматизация задач приёмной комиссии</div>
           </div>
         </div>
         <div class="card-desc">

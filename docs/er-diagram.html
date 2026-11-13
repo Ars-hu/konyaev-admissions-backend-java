@@ -5,12 +5,12 @@
 <title>ER-диаграмма реляционной базы данных — АИС Приёмная комиссия</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    width: 2400px;
-    height: 1550px;
+    width: 1800px;
+    height: 1050px;
     background-color: #121316;
     color: #e3e3e3;
     font-family: 'Roboto', 'Google Sans', sans-serif;
@@ -31,764 +31,617 @@
     --surface-1: #1e1f23;
     --surface-2: #282a2f;
     --surface-3: #32353b;
-    --border: rgba(255, 255, 255, 0.1);
-    --border-strong: rgba(255, 255, 255, 0.2);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-strong: rgba(255, 255, 255, 0.22);
   }
 
-  .grid-canvas {
+  .grid-bg {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
-    background-size: 32px 32px;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+    background-size: 28px 28px;
     pointer-events: none;
   }
 
-  /* Top App Bar Header */
-  .header {
-    height: 96px;
-    padding: 0 48px;
+  /* Top Bar */
+  .top-bar {
+    height: 72px;
+    padding: 0 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: #18191d;
     border-bottom: 1px solid var(--border);
   }
-  .header-left {
+  .top-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
   }
-  .google-dots {
-    display: flex;
-    gap: 7px;
-  }
-  .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-  }
-  .dot.blue { background: #4285f4; }
-  .dot.red { background: #ea4335; }
-  .dot.yellow { background: #fbbc05; }
-  .dot.green { background: #34a853; }
-
-  .header-title {
-    font-family: 'Google Sans', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.5px;
-  }
-  .header-subtitle {
-    font-size: 16px;
-    color: #9aa0a6;
-    margin-left: 12px;
-    padding-left: 14px;
-    border-left: 1px solid var(--border);
-  }
-
-  .header-chips {
-    display: flex;
-    gap: 12px;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    border-radius: 9999px;
-    font-size: 14px;
-    font-weight: 500;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: #e3e3e3;
-  }
-  .chip.blue { color: var(--g-blue); border-color: rgba(138, 180, 248, 0.4); background: var(--g-blue-bg); }
-  .chip.green { color: var(--g-green); border-color: rgba(129, 201, 149, 0.4); background: var(--g-green-bg); }
-
-  /* SVG Links Layer */
-  svg.connectors {
-    position: absolute;
-    top: 96px;
-    left: 0;
-    width: 2400px;
-    height: 1454px;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .conn-line {
-    fill: none;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-  }
-  .conn-blue { stroke: var(--g-blue); }
-  .conn-green { stroke: var(--g-green); }
-  .conn-yellow { stroke: var(--g-yellow); stroke-dasharray: 6 4; }
-  .conn-red { stroke: var(--g-red); stroke-dasharray: 5 4; }
-  .conn-purple { stroke: var(--g-purple); stroke-dasharray: 4 4; }
-
-  /* Table Cards */
-  .table-card {
-    position: absolute;
-    background: var(--surface-1);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    z-index: 2;
-    overflow: hidden;
-  }
-  .table-card.featured {
-    border: 2px solid var(--g-blue);
-    box-shadow: 0 14px 40px rgba(66, 133, 244, 0.22);
-  }
-  .table-card.archive {
-    border: 1.5px solid var(--g-yellow);
-    box-shadow: 0 12px 36px rgba(251, 188, 5, 0.15);
-  }
-
-  .table-header {
-    padding: 16px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface-2);
-  }
-  .table-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .table-name {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 20px;
-    font-weight: 700;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .table-badge {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .table-comment {
-    font-size: 13px;
-    color: #9aa0a6;
-    font-weight: 400;
-  }
-
-  .table-body {
-    padding: 8px 0;
-  }
-  .column-row {
-    padding: 9px 22px;
-    display: grid;
-    grid-template-columns: 58px 1fr 140px;
-    align-items: center;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  }
-  .column-row:last-child {
-    border-bottom: none;
-  }
-  .column-row.pk-row {
-    background: rgba(138, 180, 248, 0.08);
-  }
-
-  .badge-col {
-    display: flex;
-    align-items: center;
-  }
-  .tag {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 6px;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-  .tag.pk { background: #4285f4; color: #ffffff; }
-  .tag.fk { background: #fbbc05; color: #202124; }
-  .tag.uk { background: #ea4335; color: #ffffff; }
-  .tag.idx { background: rgba(197, 138, 249, 0.2); color: var(--g-purple); border: 1px solid rgba(197, 138, 249, 0.4); }
-
-  .col-name {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: #e8eaed;
-  }
-  .col-name.pk-text { color: #ffffff; font-weight: 700; }
-  .col-type {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 12px;
-    color: var(--g-green);
-    text-align: right;
-  }
-
-  /* Info / Legend Panel */
-  .panel-legend {
-    position: absolute;
-    right: 48px;
-    top: 130px;
-    width: 490px;
-    background: var(--surface-1);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 30px;
-    z-index: 2;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  }
-  .panel-title {
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.b { background: #4285f4; }
+  .dot.r { background: #ea4335; }
+  .dot.y { background: #fbbc05; }
+  .dot.g { background: #34a853; }
+  .title {
     font-family: 'Google Sans', sans-serif;
     font-size: 22px;
     font-weight: 700;
     color: #ffffff;
-    margin-bottom: 20px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #9aa0a6;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+  }
+  .top-badges {
+    display: flex;
+    gap: 12px;
+  }
+  .chip {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+
+  /* SVG Connector Layer */
+  svg.diagram-lines {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    width: 1800px;
+    height: 978px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .ortho-line {
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+  }
+
+  /* Table Cards */
+  .table-box {
+    position: absolute;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    z-index: 2;
+    overflow: hidden;
+  }
+  .table-box.core {
+    border: 2px solid var(--g-blue);
+    box-shadow: 0 10px 32px rgba(66, 133, 244, 0.25);
+  }
+  .table-box.archive {
+    border: 2px solid var(--g-yellow);
+    box-shadow: 0 10px 32px rgba(251, 188, 5, 0.2);
+  }
+
+  .tbl-head {
+    padding: 10px 16px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+  }
+  .tbl-name {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tbl-type {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .tbl-rows {
+    padding: 4px 0;
+  }
+  .row {
+    padding: 5px 16px;
+    display: grid;
+    grid-template-columns: 50px 1fr 130px;
+    align-items: center;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+  .row:last-child { border-bottom: none; }
+  .row.pk-row { background: rgba(138, 180, 248, 0.07); }
+
+  .badge {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-align: center;
+    display: inline-block;
+  }
+  .badge.pk { background: #4285f4; color: #fff; }
+  .badge.fk { background: #fbbc05; color: #202124; }
+  .badge.uk { background: #ea4335; color: #fff; }
+  .badge.idx { background: rgba(197, 138, 249, 0.2); color: var(--g-purple); border: 1px solid rgba(197, 138, 249, 0.4); }
+
+  .col-title {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    color: #e8eaed;
+    font-weight: 500;
+  }
+  .col-title.bold { color: #fff; font-weight: 700; }
+  .col-type {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--g-green);
+    text-align: right;
+  }
+
+  /* Relationship Pill on Line */
+  .rel-badge {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #18191d;
+    border: 1px solid;
+    position: absolute;
+    z-index: 3;
+    white-space: nowrap;
+  }
+
+  /* Legend Bottom Panel */
+  .legend-panel {
+    position: absolute;
+    left: 40px;
+    bottom: 20px;
+    width: 1720px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    z-index: 4;
+  }
+  .legend-group {
+    display: flex;
+    align-items: center;
+    gap: 24px;
   }
   .legend-item {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 14px;
-    font-size: 14px;
-    color: #bdc1c6;
-    line-height: 1.4;
+    align-items: center;
+    gap: 8px;
   }
-  .legend-line {
-    width: 36px;
-    height: 4px;
+  .leg-line {
+    width: 24px;
+    height: 3px;
     border-radius: 2px;
-    margin-top: 7px;
-    flex-shrink: 0;
-  }
-
-  .stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
-  .stat-card {
-    background: var(--surface-2);
-    border-radius: 16px;
-    padding: 16px 20px;
-    border: 1px solid var(--border);
-  }
-  .stat-num {
-    font-family: 'Google Sans', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--g-blue);
-  }
-  .stat-label {
-    font-size: 13px;
-    color: #9aa0a6;
-    margin-top: 2px;
-  }
-
-  .note-box {
-    margin-top: 24px;
-    background: rgba(138, 180, 248, 0.08);
-    border: 1px solid rgba(138, 180, 248, 0.25);
-    border-radius: 16px;
-    padding: 18px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #e8eaed;
   }
 </style>
 </head>
 <body>
 
-<div class="grid-canvas"></div>
+<div class="grid-bg"></div>
 
 <!-- Top Navigation -->
-<div class="header">
-  <div class="header-left">
-    <div class="google-dots">
-      <div class="dot blue"></div>
-      <div class="dot red"></div>
-      <div class="dot yellow"></div>
-      <div class="dot green"></div>
+<div class="top-bar">
+  <div class="top-left">
+    <div class="dots">
+      <div class="dot b"></div><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
     </div>
-    <div class="header-title">PostgreSQL 16 Relational Schema • Entity-Relationship Diagram</div>
-    <div class="header-subtitle">ГБПОУ ТО «Тверской колледж им. А.Н. Коняева» • priem-konyaeva.ru</div>
+    <div class="title">Схема реляционной базы данных • PostgreSQL 16 (3NF)</div>
+    <div class="subtitle">АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</div>
   </div>
-  <div class="header-chips">
-    <div class="chip blue">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z"/></svg>
-      Spring Data JPA + Hibernate
-    </div>
-    <div class="chip green">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-      3NF Нормализация
-    </div>
+  <div class="top-badges">
+    <div class="chip" style="color: var(--g-blue); border-color: rgba(138,180,248,0.4);">Spring Data JPA / Hibernate</div>
+    <div class="chip" style="color: var(--g-green); border-color: rgba(129,201,149,0.4);">9 Таблиц • B-Tree Индексы</div>
   </div>
 </div>
 
-<!-- SVG Connectors -->
-<svg class="connectors">
+<!-- SVG Connectors (Orthogonal clean lines) -->
+<svg class="diagram-lines">
   <defs>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 9 5 L 0 9 z" fill="#8ab4f8"/>
+    <!-- Crow's foot and marker definitions -->
+    <marker id="dot-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <circle cx="5" cy="5" r="3" fill="#8ab4f8"/>
     </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 9 5 L 0 9 z" fill="#81c995"/>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#8ab4f8"/>
     </marker>
-    <marker id="arrow-yellow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fdd663"/>
+    <marker id="arrow-yellow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fdd663"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#81c995"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f28b82"/>
     </marker>
   </defs>
 
-  <!-- 1. application -> archived_application (archive copy) -->
-  <path d="M 640 260 L 530 260" class="conn-line conn-yellow" marker-end="url(#arrow-yellow)" />
-  <rect x="540" y="234" width="85" height="22" rx="6" fill="#1e1f23" stroke="#fdd663" stroke-width="1"/>
-  <text x="548" y="249" fill="#fdd663" font-family="Roboto Mono" font-size="11" font-weight="700">1:1 ARCHIVE</text>
+  <!-- 1. application (id) -> archived_application (original_id) (Vertical 1:1) -->
+  <path d="M 850 420 L 850 510" class="ortho-line" stroke="#fdd663" stroke-width="2.5" marker-end="url(#arrow-yellow)" />
 
-  <!-- 2. application -> slot_config (date + time) -->
-  <path d="M 1080 230 C 1140 230, 1140 200, 1220 200" class="conn-line conn-blue" marker-end="url(#arrow-blue)" />
-  <rect x="1100" y="178" width="105" height="22" rx="6" fill="#1e1f23" stroke="#8ab4f8" stroke-width="1"/>
-  <text x="1108" y="193" fill="#8ab4f8" font-family="Roboto Mono" font-size="11" font-weight="700">N:1 (date,time)</text>
+  <!-- 2. application -> slot_config (Orthogonal N:1) -->
+  <!-- Exit application right at y=190, go to x=1150, y=190, enter slot_config left -->
+  <path d="M 1110 190 L 1190 190" class="ortho-line" stroke="#8ab4f8" stroke-width="2.5" marker-end="url(#arrow-blue)" />
 
-  <!-- 3. application -> daily_limit (date) -->
-  <path d="M 1080 340 C 1140 340, 1140 540, 1220 540" class="conn-line conn-green" marker-end="url(#arrow-green)" />
-  <rect x="1100" y="418" width="100" height="22" rx="6" fill="#1e1f23" stroke="#81c995" stroke-width="1"/>
-  <text x="1108" y="433" fill="#81c995" font-family="Roboto Mono" font-size="11" font-weight="700">N:1 DAILY-LIMIT</text>
+  <!-- 3. application -> daily_limit (Orthogonal N:1) -->
+  <!-- Exit application right at y=300, elbow to x=1150, down to y=490, enter daily_limit left -->
+  <path d="M 1110 300 L 1150 300 L 1150 490 L 1190 490" class="ortho-line" stroke="#81c995" stroke-width="2.5" marker-end="url(#arrow-green)" />
 
-  <!-- 4. application -> allowed_month (year, month validation) -->
-  <path d="M 1080 410 C 1150 410, 1150 820, 1220 820" class="conn-line conn-yellow" marker-end="url(#arrow-yellow)" />
-  <rect x="1100" y="608" width="112" height="22" rx="6" fill="#1e1f23" stroke="#fdd663" stroke-width="1"/>
-  <text x="1108" y="623" fill="#fdd663" font-family="Roboto Mono" font-size="11" font-weight="700">N:1 ALLOWED-MO</text>
+  <!-- 4. application -> blocked_date (Orthogonal validation check) -->
+  <path d="M 1110 360 L 1160 360 L 1160 740 L 1190 740" class="ortho-line" stroke="#f28b82" stroke-dasharray="5 4" stroke-width="2" marker-end="url(#arrow-red)" />
 
-  <!-- 5. application -> blocked_date (date exclusion) -->
-  <path d="M 810 540 C 810 720, 720 800, 720 945" class="conn-line conn-red" />
-  <rect x="735" y="750" width="105" height="22" rx="6" fill="#1e1f23" stroke="#f28b82" stroke-width="1"/>
-  <text x="742" y="765" fill="#f28b82" font-family="Roboto Mono" font-size="11" font-weight="700">NOT IN BLOCKED</text>
+  <!-- 5. application -> opened_date (Orthogonal validation check) -->
+  <path d="M 1110 380 L 1170 380 L 1170 870 L 1190 870" class="ortho-line" stroke="#81c995" stroke-dasharray="5 4" stroke-width="2" marker-end="url(#arrow-green)" />
 
-  <!-- 6. application -> opened_date (date override) -->
-  <path d="M 910 540 C 910 720, 1020 800, 1020 945" class="conn-line conn-green" />
-  <rect x="940" y="750" width="115" height="22" rx="6" fill="#1e1f23" stroke="#81c995" stroke-width="1"/>
-  <text x="948" y="765" fill="#81c995" font-family="Roboto Mono" font-size="11" font-weight="700">IN OPENED-DATE</text>
-
-  <!-- 7. admin -> manages everything -->
-  <path d="M 440 920 C 500 920, 500 1140, 1220 1140" class="conn-line conn-purple" />
-  <rect x="580" y="1128" width="160" height="22" rx="6" fill="#1e1f23" stroke="#c58af9" stroke-width="1"/>
-  <text x="588" y="1143" fill="#c58af9" font-family="Roboto Mono" font-size="11" font-weight="700">ADMIN CONFIG CONTROL</text>
+  <!-- 6. admin -> site_settings & allowed_month (Control) -->
+  <path d="M 280 295 L 280 345" class="ortho-line" stroke="#c58af9" stroke-dasharray="4 4" stroke-width="2" />
+  <path d="M 280 545 L 280 610" class="ortho-line" stroke="#c58af9" stroke-dasharray="4 4" stroke-width="2" />
 </svg>
 
-<!-- 1. TABLE: application (Featured) -->
-<div class="table-card featured" style="top: 130px; left: 640px; width: 440px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-blue);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-        application
-      </div>
-      <div class="table-badge" style="background: var(--g-blue-bg); color: var(--g-blue);">Оперативная</div>
-    </div>
-    <div class="table-comment">Активные заявки абитуриентов на текущий сезон</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">fio</div>
-      <div class="col-type">VARCHAR(255)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag idx">IDX</span></div>
-      <div class="col-name">phone</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag idx">IDX</span></div>
-      <div class="col-name">email</div>
-      <div class="col-type">VARCHAR(100)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag idx">IDX</span></div>
-      <div class="col-name">registration_date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">registration_time</div>
-      <div class="col-type">VARCHAR(10)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">created_at</div>
-      <div class="col-type">TIMESTAMPTZ</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">status</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-  </div>
+<!-- Rel Badges placed cleanly over lines -->
+<div class="rel-badge" style="top: 508px; left: 775px; color: var(--g-yellow); border-color: var(--g-yellow);">
+  1:1 (original_id ➔ id)
+</div>
+<div class="rel-badge" style="top: 247px; left: 1115px; color: var(--g-blue); border-color: var(--g-blue);">
+  N:1 (date, time)
+</div>
+<div class="rel-badge" style="top: 420px; left: 1115px; color: var(--g-green); border-color: var(--g-green);">
+  N:1 (date)
 </div>
 
-<!-- 2. TABLE: archived_application -->
-<div class="table-card archive" style="top: 130px; left: 80px; width: 450px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-yellow);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>
-        archived_application
-      </div>
-      <div class="table-badge" style="background: var(--g-yellow-bg); color: var(--g-yellow);">Архив</div>
-    </div>
-    <div class="table-comment">Завершённые и исторические заявления прошлых дней</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag fk">REF</span></div>
-      <div class="col-name">original_id</div>
-      <div class="col-type">BIGINT</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">fio</div>
-      <div class="col-type">VARCHAR(255)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">phone</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">email</div>
-      <div class="col-type">VARCHAR(100)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag idx">IDX</span></div>
-      <div class="col-name">registration_date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">registration_time</div>
-      <div class="col-type">VARCHAR(10)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">status</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">created_at</div>
-      <div class="col-type">TIMESTAMPTZ</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">archived_at</div>
-      <div class="col-type">TIMESTAMPTZ</div>
-    </div>
-  </div>
-</div>
+<!-- ========================================================================= -->
+<!-- COL 1: SYSTEM & ADMIN CONFIGURATION                                       -->
+<!-- ========================================================================= -->
 
-<!-- 3. TABLE: slot_config -->
-<div class="table-card" style="top: 130px; left: 1220px; width: 440px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-blue);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-        slot_config
-      </div>
-      <div class="table-badge" style="background: var(--g-blue-bg); color: var(--g-blue);">Квота времени</div>
-    </div>
-    <div class="table-comment">Лимиты вместимости 10-минутных интервалов</div>
+<!-- 1. TABLE: admin (Приёмная комиссия) -->
+<div class="table-box" style="top: 100px; left: 60px; width: 440px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-purple);">admin</div>
+    <div class="tbl-type" style="background: rgba(197, 138, 249, 0.15); color: var(--g-purple);">Приёмная комиссия</div>
   </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
       <div class="col-type">BIGSERIAL</div>
     </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag idx">IDX</span></div>
-      <div class="col-name">date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">time</div>
-      <div class="col-type">VARCHAR(10)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">max_capacity</div>
-      <div class="col-type">INT DEFAULT 3</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">is_blocked</div>
-      <div class="col-type">BOOLEAN FALSE</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name" style="font-size:12px; color:#f28b82;">uq_slot_date_time</div>
-      <div class="col-type">(date, time)</div>
-    </div>
-  </div>
-</div>
-
-<!-- 4. TABLE: daily_limit -->
-<div class="table-card" style="top: 450px; left: 1220px; width: 440px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-green);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-        daily_limit
-      </div>
-      <div class="table-badge" style="background: var(--g-green-bg); color: var(--g-green);">Суточный лимит</div>
-    </div>
-    <div class="table-comment">Максимальное число приёмов абитуриентов в день</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name">date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">max_registrations</div>
-      <div class="col-type">INT NOT NULL</div>
-    </div>
-  </div>
-</div>
-
-<!-- 5. TABLE: allowed_month -->
-<div class="table-card" style="top: 670px; left: 1220px; width: 440px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-yellow);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>
-        allowed_month
-      </div>
-      <div class="table-badge" style="background: var(--g-yellow-bg); color: var(--g-yellow);">Период кампании</div>
-    </div>
-    <div class="table-comment">Месяцы приёмной кампании колледжа</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">year</div>
-      <div class="col-type">INT</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">month</div>
-      <div class="col-type">INT</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name" style="font-size:12px; color:#f28b82;">uq_allowed_month</div>
-      <div class="col-type">(year, month)</div>
-    </div>
-  </div>
-</div>
-
-<!-- 6. TABLE: blocked_date -->
-<div class="table-card" style="top: 950px; left: 560px; width: 330px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-red);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>
-        blocked_date
-      </div>
-      <div class="table-badge" style="background: var(--g-red-bg); color: var(--g-red);">Блок</div>
-    </div>
-    <div class="table-comment">Запрет записи на дату</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name">date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-  </div>
-</div>
-
-<!-- 7. TABLE: opened_date -->
-<div class="table-card" style="top: 950px; left: 910px; width: 330px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-green);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-        opened_date
-      </div>
-      <div class="table-badge" style="background: var(--g-green-bg); color: var(--g-green);">Доступ</div>
-    </div>
-    <div class="table-comment">Рабочие субботы</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name">date</div>
-      <div class="col-type">VARCHAR(20)</div>
-    </div>
-  </div>
-</div>
-
-<!-- 8. TABLE: admin -->
-<div class="table-card" style="top: 750px; left: 80px; width: 450px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-purple);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-        admin
-      </div>
-      <div class="table-badge" style="background: rgba(197, 138, 249, 0.15); color: var(--g-purple);">Персонал</div>
-    </div>
-    <div class="table-comment">Сотрудники комиссии, роли и BCrypt хеши</div>
-  </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
-      <div class="col-type">BIGSERIAL</div>
-    </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name">username</div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title">username</div>
       <div class="col-type">VARCHAR(50)</div>
     </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">password_hash</div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">password_hash</div>
       <div class="col-type">VARCHAR(255)</div>
     </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">role</div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">role</div>
       <div class="col-type">VARCHAR(30)</div>
     </div>
   </div>
 </div>
 
-<!-- 9. TABLE: site_settings -->
-<div class="table-card" style="top: 950px; left: 1260px; width: 400px;">
-  <div class="table-header">
-    <div class="table-title-row">
-      <div class="table-name" style="color: var(--g-blue);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-        site_settings
-      </div>
-      <div class="table-badge" style="background: var(--g-blue-bg); color: var(--g-blue);">Параметры</div>
-    </div>
-    <div class="table-comment">Глобальные ключи конфигурации системы</div>
+<!-- 2. TABLE: site_settings -->
+<div class="table-box" style="top: 360px; left: 60px; width: 440px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-blue);">site_settings</div>
+    <div class="tbl-type" style="background: var(--g-blue-bg); color: var(--g-blue);">Параметры системы</div>
   </div>
-  <div class="table-body">
-    <div class="column-row pk-row">
-      <div class="badge-col"><span class="tag pk">PK</span></div>
-      <div class="col-name pk-text">id</div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
       <div class="col-type">BIGSERIAL</div>
     </div>
-    <div class="column-row">
-      <div class="badge-col"><span class="tag uk">UK</span></div>
-      <div class="col-name">key</div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title">key</div>
       <div class="col-type">VARCHAR(50)</div>
     </div>
-    <div class="column-row">
-      <div class="badge-col"></div>
-      <div class="col-name">value</div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">value</div>
       <div class="col-type">VARCHAR(100)</div>
     </div>
   </div>
 </div>
 
-<!-- Right Panel: Legend and Architecture Metrics -->
-<div class="panel-legend">
-  <div class="panel-title">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8ab4f8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-    Обозначения и связи (ER)
+<!-- 3. TABLE: allowed_month -->
+<div class="table-box" style="top: 625px; left: 60px; width: 440px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-yellow);">allowed_month</div>
+    <div class="tbl-type" style="background: var(--g-yellow-bg); color: var(--g-yellow);">Период кампании</div>
   </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">year</div>
+      <div class="col-type">INT</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">month</div>
+      <div class="col-type">INT</div>
+    </div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title" style="font-size:11px; color:#f28b82;">uq_allowed_month</div>
+      <div class="col-type">(year, month)</div>
+    </div>
+  </div>
+</div>
 
-  <div class="legend-item">
-    <div class="legend-line" style="background: var(--g-blue);"></div>
-    <div><strong>N:1 Слоты:</strong> Бронирование 10-минутного кванта времени с ограничением <code>max_capacity</code></div>
-  </div>
-  <div class="legend-item">
-    <div class="legend-line" style="background: var(--g-green);"></div>
-    <div><strong>N:1 Квоты:</strong> Проверка суточного лимита записей на дату</div>
-  </div>
-  <div class="legend-item">
-    <div class="legend-line" style="background: var(--g-yellow);"></div>
-    <div><strong>1:1 Архивация:</strong> Безопасный перенос в архив без потери <code>original_id</code></div>
-  </div>
-  <div class="legend-item">
-    <div class="legend-line" style="background: var(--g-red);"></div>
-    <div><strong>Исключения:</strong> Запрет записи на заблокированные даты календаря</div>
-  </div>
+<!-- ========================================================================= -->
+<!-- COL 2: TRANSACTIONAL CORE (application & archived_application)            -->
+<!-- ========================================================================= -->
 
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-num">9</div>
-      <div class="stat-label">Реляционных таблиц</div>
+<!-- 4. TABLE: application (Featured) -->
+<div class="table-box core" style="top: 100px; left: 590px; width: 520px;">
+  <div class="tbl-head" style="background: rgba(138, 180, 248, 0.12);">
+    <div class="tbl-name" style="color: var(--g-blue);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+      application
     </div>
-    <div class="stat-card">
-      <div class="stat-num" style="color: var(--g-green);">6</div>
-      <div class="stat-label">B-Tree Индексов</div>
+    <div class="tbl-type" style="background: var(--g-blue); color: #121316; font-weight: 700;">Актуальные записи</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-num" style="color: var(--g-yellow);">100%</div>
-      <div class="stat-label">Целостность ACID</div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">fio</div>
+      <div class="col-type">VARCHAR(255) NOT NULL</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-num" style="color: var(--g-purple);">0 ms</div>
-      <div class="stat-label">Zero-Lock при чтении</div>
+    <div class="row">
+      <div><span class="badge idx">IDX</span></div>
+      <div class="col-title">phone</div>
+      <div class="col-type">VARCHAR(20) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge idx">IDX</span></div>
+      <div class="col-title">email</div>
+      <div class="col-type">VARCHAR(100) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge idx">IDX</span></div>
+      <div class="col-title">registration_date</div>
+      <div class="col-type">VARCHAR(20) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">registration_time</div>
+      <div class="col-type">VARCHAR(10) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">status</div>
+      <div class="col-type">VARCHAR(20) 'pending'</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">created_at</div>
+      <div class="col-type">TIMESTAMPTZ NOW()</div>
     </div>
   </div>
+</div>
 
-  <div class="note-box">
-    <strong>Инженерное решение архитектуры данных:</strong><br>
-    Разделение оперативной таблицы <code>application</code> и архива <code>archived_application</code> гарантирует, что даже при десятках тысяч записей за годы работы выборка свободных слотов в день приёма всегда выполняется мгновенно по компактным индексам.
+<!-- 5. TABLE: archived_application -->
+<div class="table-box archive" style="top: 530px; left: 590px; width: 520px;">
+  <div class="tbl-head" style="background: rgba(253, 214, 99, 0.12);">
+    <div class="tbl-name" style="color: var(--g-yellow);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>
+      archived_application
+    </div>
+    <div class="tbl-type" style="background: var(--g-yellow); color: #121316; font-weight: 700;">Архив приёма</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge fk">FK</span></div>
+      <div class="col-title bold" style="color: var(--g-yellow);">original_id</div>
+      <div class="col-type">BIGINT NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">fio</div>
+      <div class="col-type">VARCHAR(255)</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">phone</div>
+      <div class="col-type">VARCHAR(20)</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">email</div>
+      <div class="col-type">VARCHAR(100)</div>
+    </div>
+    <div class="row">
+      <div><span class="badge idx">IDX</span></div>
+      <div class="col-title">registration_date</div>
+      <div class="col-type">VARCHAR(20)</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">registration_time</div>
+      <div class="col-type">VARCHAR(10)</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">status</div>
+      <div class="col-type">VARCHAR(20)</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">archived_at</div>
+      <div class="col-type">TIMESTAMPTZ NOW()</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- COL 3: CALENDAR & QUOTAS                                                  -->
+<!-- ========================================================================= -->
+
+<!-- 6. TABLE: slot_config -->
+<div class="table-box" style="top: 100px; left: 1190px; width: 550px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-blue);">slot_config</div>
+    <div class="tbl-type" style="background: var(--g-blue-bg); color: var(--g-blue);">Лимит 10-мин слота</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge idx">IDX</span></div>
+      <div class="col-title">date</div>
+      <div class="col-type">VARCHAR(20) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">time</div>
+      <div class="col-type">VARCHAR(10) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">max_capacity</div>
+      <div class="col-type">INT DEFAULT 3</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">is_blocked</div>
+      <div class="col-type">BOOLEAN FALSE</div>
+    </div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title" style="font-size:11px; color:#f28b82;">uq_slot_date_time</div>
+      <div class="col-type">(date, time)</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. TABLE: daily_limit -->
+<div class="table-box" style="top: 410px; left: 1190px; width: 550px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-green);">daily_limit</div>
+    <div class="tbl-type" style="background: var(--g-green-bg); color: var(--g-green);">Суточная квота</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title">date</div>
+      <div class="col-type">VARCHAR(20) NOT NULL</div>
+    </div>
+    <div class="row">
+      <div></div>
+      <div class="col-title">max_registrations</div>
+      <div class="col-type">INT NOT NULL DEFAULT 0</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8. TABLE: blocked_date -->
+<div class="table-box" style="top: 660px; left: 1190px; width: 550px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-red);">blocked_date</div>
+    <div class="tbl-type" style="background: var(--g-red-bg); color: var(--g-red);">Заблокированные дни</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title">date</div>
+      <div class="col-type">VARCHAR(20) NOT NULL UNIQUE</div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. TABLE: opened_date -->
+<div class="table-box" style="top: 790px; left: 1190px; width: 550px;">
+  <div class="tbl-head">
+    <div class="tbl-name" style="color: var(--g-green);">opened_date</div>
+    <div class="tbl-type" style="background: var(--g-green-bg); color: var(--g-green);">Открытые субботы</div>
+  </div>
+  <div class="tbl-rows">
+    <div class="row pk-row">
+      <div><span class="badge pk">PK</span></div>
+      <div class="col-title bold">id</div>
+      <div class="col-type">BIGSERIAL</div>
+    </div>
+    <div class="row">
+      <div><span class="badge uk">UK</span></div>
+      <div class="col-title">date</div>
+      <div class="col-type">VARCHAR(20) NOT NULL UNIQUE</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Legend Panel -->
+<div class="legend-panel">
+  <div class="legend-group">
+    <div class="legend-item">
+      <div class="leg-line" style="background: var(--g-yellow);"></div>
+      <span><strong>1:1 Архивация:</strong> Перенос завершённых заявок по расписанию через <code>original_id</code></span>
+    </div>
+    <div class="legend-item">
+      <div class="leg-line" style="background: var(--g-blue);"></div>
+      <span><strong>N:1 Квота слота:</strong> Ограничение числа посетителей в 10-минутном интервале</span>
+    </div>
+    <div class="legend-item">
+      <div class="leg-line" style="background: var(--g-green);"></div>
+      <span><strong>N:1 Суточный лимит:</strong> Контроль максимума абитуриентов в день</span>
+    </div>
+  </div>
+  <div style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #9aa0a6;">
+    ACID Гарантии • Индексы по датам и телефонам • PostgreSQL 16
   </div>
 </div>
 
