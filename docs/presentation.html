@@ -3,36 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>АИС Приёмной комиссии колледжа — Backend на Java Spring Boot</title>
+<title>АИС «Электронная приёмная комиссия колледжа» — Перевод бэкенда на Java Spring Boot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700;800&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg-main: #070b14;
-    --bg-card: rgba(15, 23, 42, 0.75);
-    --bg-card-hover: rgba(30, 41, 59, 0.85);
-    --border-subtle: rgba(56, 189, 248, 0.16);
-    --border-bright: rgba(56, 189, 248, 0.4);
-    --primary: #38bdf8;
-    --primary-glow: rgba(56, 189, 248, 0.25);
-    --secondary: #818cf8;
-    --emerald: #34d399;
-    --emerald-glow: rgba(52, 211, 153, 0.2);
-    --amber: #fbbf24;
-    --rose: #f43f5e;
-    --purple: #c084fc;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Liberation Sans", sans-serif;
-    --font-mono: 'JetBrains Mono', 'Liberation Mono', monospace;
-  }
-
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+  }
+
+  :root {
+    --g-bg: #121316;
+    --g-surface: #1e1f23;
+    --g-surface-high: #282a2f;
+    --g-surface-highest: #33353b;
+    --g-border: rgba(255, 255, 255, 0.1);
+    --g-border-strong: rgba(255, 255, 255, 0.2);
+    --g-blue: #8ab4f8;
+    --g-blue-bg: rgba(138, 180, 248, 0.12);
+    --g-red: #f28b82;
+    --g-red-bg: rgba(242, 139, 130, 0.12);
+    --g-yellow: #fdd663;
+    --g-yellow-bg: rgba(253, 214, 99, 0.12);
+    --g-green: #81c995;
+    --g-green-bg: rgba(129, 201, 149, 0.12);
+    --g-purple: #c58af9;
+    --text-primary: #ffffff;
+    --text-secondary: #c4c7c5;
+    --text-muted: #8e918f;
+    --font-sans: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Roboto Mono', 'JetBrains Mono', monospace;
   }
 
   @page {
@@ -42,8 +44,7 @@
 
   html, body {
     width: 100%;
-    min-height: 100%;
-    background: var(--bg-main);
+    background: var(--g-bg);
     color: var(--text-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -52,2056 +53,1312 @@
     print-color-adjust: exact;
   }
 
-  /* Presentation Mode Navigation */
-  .deck-controls {
-    position: fixed;
-    bottom: 24px;
-    right: 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid var(--border-bright);
-    padding: 10px 18px;
-    border-radius: 40px;
-    backdrop-filter: blur(12px);
-    z-index: 9999;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  }
-
-  .deck-btn {
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: var(--text-primary);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .deck-btn:hover {
-    background: rgba(56, 189, 248, 0.3);
-    border-color: var(--primary);
-    color: #fff;
-    transform: translateY(-1px);
-  }
-
-  .deck-counter {
-    color: var(--primary);
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 70px;
-    text-align: center;
-  }
-
-  /* Slide Base */
   .slide {
     width: 1920px;
     height: 1080px;
-    min-height: 1080px;
-    max-height: 1080px;
-    padding: 48px 68px 36px 68px;
+    padding: 60px 80px 48px 80px;
+    box-sizing: border-box;
     position: relative;
     overflow: hidden;
+    background-color: var(--g-bg);
+    page-break-after: always;
+    break-after: page;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background: radial-gradient(circle at 90% 10%, rgba(56, 189, 248, 0.08), transparent 45%),
-                radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.08), transparent 45%),
-                linear-gradient(180deg, #070b14 0%, #0d1527 100%);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
-    page-break-after: always;
-    break-after: page;
-    page-break-inside: avoid;
-    break-inside: avoid;
   }
 
-  /* Slide Header */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+    background-size: 36px 36px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .slide > * {
+    position: relative;
+    z-index: 1;
+  }
+
   .slide-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 14px;
-    margin-bottom: 20px;
+    align-items: flex-start;
+    margin-bottom: 28px;
   }
-
-  .header-college {
+  .header-meta {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-bottom: 8px;
   }
-
-  .college-badge {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(99, 102, 241, 0.15));
-    border: 1px solid var(--border-bright);
-    color: var(--primary);
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+  .slide-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-  }
-
-  .header-system-name {
-    color: var(--text-secondary);
+    padding: 6px 16px;
+    border-radius: 9999px;
     font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--g-surface-high);
+    border: 1px solid var(--g-border);
+  }
+  .slide-chip.blue { color: var(--g-blue); border-color: rgba(138, 180, 248, 0.4); background: var(--g-blue-bg); }
+  .slide-chip.green { color: var(--g-green); border-color: rgba(129, 201, 149, 0.4); background: var(--g-green-bg); }
+  .slide-chip.yellow { color: var(--g-yellow); border-color: rgba(253, 214, 99, 0.4); background: var(--g-yellow-bg); }
+  .slide-chip.red { color: var(--g-red); border-color: rgba(242, 139, 130, 0.4); background: var(--g-red-bg); }
+
+  .slide-org {
+    font-size: 15px;
+    color: var(--text-muted);
     font-weight: 500;
   }
 
-  .slide-num-badge {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary);
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid var(--border-subtle);
-    padding: 6px 14px;
-    border-radius: 12px;
-  }
-
-  /* Slide Titles */
-  .title-area {
-    margin-bottom: 20px;
-  }
-
   .slide-title {
-    font-size: 38px;
-    font-weight: 800;
+    font-size: 46px;
+    font-weight: 700;
+    color: #ffffff;
     line-height: 1.15;
-    background: linear-gradient(135deg, #ffffff 30%, #38bdf8 80%, #818cf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.8px;
   }
-
   .slide-subtitle {
-    font-size: 17px;
+    font-size: 20px;
     color: var(--text-secondary);
-    margin-top: 5px;
+    margin-top: 6px;
     font-weight: 400;
   }
 
-  /* Slide Body */
-  .slide-body {
+  .slide-badge-num {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--g-surface-high);
+    padding: 8px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--g-border);
+  }
+
+  .slide-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    position: relative;
-    z-index: 2;
   }
 
-  /* Slide Footer */
   .slide-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 12px;
-    margin-top: 16px;
-    color: var(--text-muted);
-    font-size: 13px;
+    padding-top: 20px;
+    border-top: 1px solid var(--g-border);
   }
-
-  .footer-tech-pills {
-    display: flex;
-    gap: 8px;
-  }
-
-  .tech-pill {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-family: var(--font-mono);
-  }
-
-  /* Cards & Layout Grids */
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 22px;
-  }
-
-  .grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-  }
-
-  .grid-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-  }
-
-  .grid-2-3 {
-    display: grid;
-    grid-template-columns: 2fr 3fr;
-    gap: 22px;
-  }
-
-  .grid-3-2 {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
-    gap: 22px;
-  }
-
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 16px;
-    padding: 22px;
-    position: relative;
-    backdrop-filter: blur(8px);
-    transition: all 0.2s;
-  }
-
-  .card-glow-cyan {
-    border-color: rgba(56, 189, 248, 0.3);
-    box-shadow: 0 4px 20px rgba(56, 189, 248, 0.08);
-  }
-
-  .card-glow-emerald {
-    border-color: rgba(52, 211, 153, 0.3);
-    box-shadow: 0 4px 20px rgba(52, 211, 153, 0.08);
-  }
-
-  .card-glow-purple {
-    border-color: rgba(192, 132, 252, 0.3);
-    box-shadow: 0 4px 20px rgba(192, 132, 252, 0.08);
-  }
-
-  .card-glow-amber {
-    border-color: rgba(251, 191, 36, 0.3);
-    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.08);
-  }
-
-  .card-title {
-    font-size: 19px;
-    font-weight: 700;
-    color: #fff;
+  .footer-left {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-muted);
   }
-
-  .card-desc {
-    font-size: 14.5px;
-    color: var(--text-secondary);
-    line-height: 1.55;
+  .google-dots-mini {
+    display: flex;
+    gap: 5px;
   }
+  .g-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .g-dot.blue { background: #4285f4; }
+  .g-dot.red { background: #ea4335; }
+  .g-dot.yellow { background: #fbbc05; }
+  .g-dot.green { background: #34a853; }
 
-  .badge-tag {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
+  .footer-right {
     font-family: var(--font-mono);
-    text-transform: uppercase;
+    font-size: 14px;
+    color: var(--text-muted);
   }
 
-  .badge-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-  .badge-emerald { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-  .badge-purple { background: rgba(192, 132, 252, 0.15); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); }
-  .badge-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-  .badge-rose { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
 
-  /* Feature Lists */
-  .feature-list {
+  .m3-card {
+    background: var(--g-surface);
+    border: 1px solid var(--g-border);
+    border-radius: 24px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .m3-card.elevated {
+    background: var(--g-surface-high);
+  }
+  .m3-card.border-blue { border-color: rgba(138, 180, 248, 0.4); }
+  .m3-card.border-green { border-color: rgba(129, 201, 149, 0.4); }
+  .m3-card.border-yellow { border-color: rgba(253, 214, 99, 0.4); }
+  .m3-card.border-red { border-color: rgba(242, 139, 130, 0.4); }
+
+  .card-icon-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+  .m3-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .m3-icon-box.blue { background: var(--g-blue-bg); color: var(--g-blue); border: 1px solid rgba(138,180,248,0.3); }
+  .m3-icon-box.green { background: var(--g-green-bg); color: var(--g-green); border: 1px solid rgba(129,201,149,0.3); }
+  .m3-icon-box.yellow { background: var(--g-yellow-bg); color: var(--g-yellow); border: 1px solid rgba(253,214,99,0.3); }
+  .m3-icon-box.red { background: var(--g-red-bg); color: var(--g-red); border: 1px solid rgba(242,139,130,0.3); }
+
+  .card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.25;
+  }
+  .card-desc {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .bullet-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 9px;
-    margin-top: 10px;
+    gap: 12px;
   }
-
-  .feature-list li {
-    font-size: 13.5px;
-    color: var(--text-secondary);
+  .bullet-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    line-height: 1.45;
+    gap: 12px;
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.5;
   }
-
-  .bullet-icon {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
+  .bullet-check {
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(56, 189, 248, 0.2);
-    color: var(--primary);
-    font-size: 11px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
     margin-top: 2px;
   }
+  .bullet-check.blue { background: var(--g-blue-bg); color: var(--g-blue); }
+  .bullet-check.green { background: var(--g-green-bg); color: var(--g-green); }
+  .bullet-check.yellow { background: var(--g-yellow-bg); color: var(--g-yellow); }
 
-  .bullet-check {
-    background: rgba(52, 211, 153, 0.2);
-    color: var(--emerald);
+  /* Postman Screenshot Card Layout */
+  .api-showcase-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 32px;
+    align-items: stretch;
   }
-
-  /* Metric Card */
-  .metric-card {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
-    border: 1px solid var(--border-subtle);
-    border-radius: 16px;
-    padding: 18px;
-    text-align: center;
-    position: relative;
+  .postman-img-frame {
+    background: #18191d;
+    border-radius: 20px;
+    border: 1px solid var(--g-border-strong);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+  }
+  .postman-img-frame img {
+    width: 100%;
+    height: auto;
+    max-height: 580px;
+    object-fit: contain;
+    display: block;
   }
 
-  .metric-value {
-    font-size: 36px;
-    font-weight: 800;
+  .api-info-panel {
+    background: var(--g-surface);
+    border: 1px solid var(--g-border);
+    border-radius: 24px;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .http-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .http-method {
     font-family: var(--font-mono);
-    line-height: 1.1;
-    margin-bottom: 6px;
-  }
-
-  .metric-label {
-    font-size: 12.5px;
-    color: var(--text-secondary);
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 8px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+  }
+  .http-method.post { background: #4285f4; color: #ffffff; }
+  .http-method.get { background: #34a853; color: #ffffff; }
+  .http-endpoint {
+    font-family: var(--font-mono);
+    font-size: 19px;
+    color: #ffffff;
+    font-weight: 600;
+  }
+  .http-status {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--g-green-bg);
+    color: var(--g-green);
+    border: 1px solid rgba(129, 201, 149, 0.4);
+    margin-left: auto;
   }
 
-  /* Tables */
-  .custom-table {
+  .m3-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
+    background: var(--g-surface);
+    border: 1px solid var(--g-border);
+    border-radius: 20px;
     overflow: hidden;
-    font-size: 13.5px;
   }
-
-  .custom-table th {
-    background: rgba(30, 41, 59, 0.9);
-    color: #fff;
-    padding: 11px 14px;
-    text-align: left;
+  .m3-table th {
+    background: var(--g-surface-high);
+    padding: 18px 24px;
+    font-size: 16px;
     font-weight: 700;
-    border-bottom: 1px solid var(--border-subtle);
+    color: #ffffff;
+    text-align: left;
+    border-bottom: 1px solid var(--g-border);
   }
-
-  .custom-table td {
-    padding: 11px 14px;
-    background: rgba(15, 23, 42, 0.6);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  .m3-table td {
+    padding: 20px 24px;
+    font-size: 16px;
     color: var(--text-secondary);
-    vertical-align: middle;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    line-height: 1.6;
   }
-
-  .custom-table tr:last-child td {
+  .m3-table tr:last-child td {
     border-bottom: none;
   }
-
-  .custom-table tr:nth-child(even) td {
-    background: rgba(20, 30, 50, 0.6);
-  }
-
-  /* Code & JSON Blocks */
-  .code-block {
-    background: #090e1a;
-    border: 1px solid rgba(56, 189, 248, 0.2);
-    border-radius: 12px;
-    padding: 14px;
+  .role-pill {
+    display: inline-block;
     font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.45;
-    color: #e2e8f0;
-    overflow: hidden;
-  }
-
-  .code-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .code-token-key { color: #38bdf8; }
-  .code-token-str { color: #34d399; }
-  .code-token-num { color: #c084fc; }
-  .code-token-bool { color: #fbbf24; }
-  .code-token-comment { color: #64748b; font-style: italic; }
-
-  /* Postman UI Mockup */
-  .postman-window {
-    background: #111827;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .postman-top-bar {
-    background: #1f2937;
-    padding: 9px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .postman-dots {
-    display: flex;
-    gap: 6px;
-  }
-
-  .postman-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-  }
-
-  .dot-red { background: #ef4444; }
-  .dot-yellow { background: #f59e0b; }
-  .dot-green { background: #10b981; }
-
-  .postman-url-bar {
-    background: #0d131f;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .method-badge {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 800;
-    padding: 3px 8px;
-    border-radius: 5px;
-  }
-
-  .method-get { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
-  .method-post { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
-  .method-patch { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
-
-  .postman-url {
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    color: #e2e8f0;
-    flex: 1;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    border-radius: 5px;
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
   }
+  .role-pill.applicant { background: var(--g-blue-bg); color: var(--g-blue); }
+  .role-pill.admin { background: var(--g-red-bg); color: var(--g-red); }
 
-  .status-200 { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
-  .status-201 { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.5); }
-
-  .time-badge {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--primary);
-  }
-
-  /* Architecture Layers */
-  .arch-layer {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid var(--border-subtle);
-    border-radius: 14px;
-    padding: 16px 22px;
+  .er-diagram-container {
+    width: 100%;
+    height: 720px;
+    background: #18191d;
+    border: 1px solid var(--g-border-strong);
+    border-radius: 24px;
+    overflow: hidden;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    position: relative;
-    backdrop-filter: blur(8px);
-  }
-
-  .arch-arrow {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    color: var(--primary);
-    padding: 2px 0;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   }
-
-  @media print {
-    .deck-controls {
-      display: none !important;
-    }
-    .slide {
-      border-bottom: none;
-    }
+  .er-diagram-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 </style>
 </head>
 <body>
 
-  <!-- Slide Deck Controls -->
-  <div class="deck-controls">
-    <button class="deck-btn" onclick="prevSlide()">← Назад</button>
-    <span class="deck-counter" id="slideCounter">1 / 16</span>
-    <button class="deck-btn" onclick="nextSlide()">Вперёд →</button>
-    <button class="deck-btn" onclick="toggleFullscreen()">⛶ Экран</button>
+<!-- ========================================================================= -->
+<!-- СЛАЙД 1. ТИТУЛЬНЫЙ СЛАЙД                                                  -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-1">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="google-dots-mini">
+          <div class="g-dot blue"></div>
+          <div class="g-dot red"></div>
+          <div class="g-dot yellow"></div>
+          <div class="g-dot green"></div>
+        </div>
+        <span class="slide-org">ГБПОУ ТО «Тверской колледж имени А.Н. Коняева» • priem-konyaeva.ru</span>
+      </div>
+      <div class="slide-chip blue">Внедрённая система • Модернизация серверной части</div>
+    </div>
+    <div class="slide-badge-num">01 / 13</div>
   </div>
 
-  <!-- SLIDE 1: Title Slide -->
-  <div class="slide" id="slide-1">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-          ГБПОУ ТО «Тверской колледж имени А.Н. Коняева»
-        </span>
-        <span class="header-system-name">Приёмная кампания 2026 • Серверная информационная система</span>
-      </div>
-      <span class="slide-num-badge">01 / 16</span>
-    </div>
-
-    <div class="slide-body" style="justify-content: center; align-items: flex-start; max-width: 1400px; margin: 0 auto; width: 100%;">
-      <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 6px 14px; border-radius: 20px; color: var(--primary); font-size: 13px; font-weight: 600; margin-bottom: 20px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        priem-konyaeva.ru • Автоматизация записи абитуриентов
-      </div>
-
-      <h1 style="font-size: 48px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; background: linear-gradient(135deg, #ffffff 40%, #38bdf8 80%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Автоматизированная информационная система приёмной комиссии колледжа
+  <div class="slide-content" style="justify-content: center; gap: 36px;">
+    <div>
+      <h1 style="font-size: 56px; font-weight: 800; color: #ffffff; line-height: 1.15; letter-spacing: -1px; margin-bottom: 16px;">
+        Автоматизированная информационная система<br>
+        <span style="color: var(--g-blue);">«Электронная приёмная комиссия колледжа»</span>
       </h1>
-
-      <p style="font-size: 23px; color: var(--text-secondary); max-width: 1150px; line-height: 1.4; margin-bottom: 36px;">
-        Проектирование и разработка высоконадёжного бэкенда с нуля на стеке <span style="color: var(--primary); font-weight: 600;">Java 21 LTS</span> и фреймворке <span style="color: var(--secondary); font-weight: 600;">Spring Boot 3</span> с многоуровневой безопасностью и экспортом ведомостей
+      <p style="font-size: 24px; color: var(--text-secondary); max-width: 1450px; line-height: 1.45;">
+        Перевод серверного ядра действующего проекта <strong style="color: #ffffff;">priem-konyaeva.ru</strong> с Python (Flask/Gunicorn) на высокопроизводительный стек <strong style="color: var(--g-blue);">Java 21 LTS + Spring Boot 3 + PostgreSQL 16</strong>
       </p>
-
-      <div class="grid-4" style="width: 100%; gap: 20px;">
-        <div class="card card-glow-cyan" style="padding: 20px;">
-          <div style="color: var(--primary); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Объект разработки</div>
-          <div style="font-size: 16px; font-weight: 700; color: #fff;">Сервис электронной записи</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Портал priem-konyaeva.ru</div>
-        </div>
-
-        <div class="card card-glow-emerald" style="padding: 20px;">
-          <div style="color: var(--emerald); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Специальность</div>
-          <div style="font-size: 16px; font-weight: 700; color: #fff;">09.02.07</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Информационные системы и программирование</div>
-        </div>
-
-        <div class="card card-glow-purple" style="padding: 20px;">
-          <div style="color: var(--purple); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Архитектурный стек</div>
-          <div style="font-size: 16px; font-weight: 700; color: #fff;">Java 21 • Spring Boot 3</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Spring Security • JPA • POI</div>
-        </div>
-
-        <div class="card card-glow-amber" style="padding: 20px;">
-          <div style="color: var(--amber); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Город и год разработки</div>
-          <div style="font-size: 16px; font-weight: 700; color: #fff;">Тверь, 2026</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">ГБПОУ ТО «ТК им. А.Н. Коняева»</div>
-        </div>
-      </div>
     </div>
 
-    <div class="slide-footer">
-      <span>Серверное приложение разработано на Java 21 LTS и Spring Boot 3 для электронной приёмной комиссии колледжа</span>
-      <div class="footer-tech-pills">
-        <span class="tech-pill">Java 21 LTS</span>
-        <span class="tech-pill">Spring Boot 3.3.5</span>
-        <span class="tech-pill">PostgreSQL</span>
-        <span class="tech-pill">JWT</span>
-        <span class="tech-pill">Apache POI</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 2: Актуальность и проблематика -->
-  <div class="slide" id="slide-2">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Анализ предметной области</span>
-        <span class="header-system-name">Обоснование актуальности разработки</span>
-      </div>
-      <span class="slide-num-badge">02 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Актуальность и проблематика</h2>
-      <p class="slide-subtitle">Вызовы традиционной работы приёмной комиссии и предпосылки создания цифровой системы</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-4" style="margin-bottom: 24px;">
-        <div class="card" style="border-left: 4px solid var(--rose);">
-          <div class="card-title" style="color: var(--rose);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Неуправляемые очереди
+    <div class="card-grid-3">
+      <div class="m3-card elevated border-blue">
+        <div class="card-icon-header">
+          <div class="m3-icon-box blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           </div>
-          <p class="card-desc">
-            В пиковые месяцы (июнь–август) в колледж обращается свыше 150 абитуриентов ежедневно. Накопление людей в холлах создаёт физический дискомфорт и эмоциональное напряжение.
-          </p>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--amber);">
-          <div class="card-title" style="color: var(--amber);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Бумажная волокита
-          </div>
-          <p class="card-desc">
-            Ручная запись в бумажные журналы приводит к ошибкам в контактах, потере записей, дубликатам и невозможности оперативно найти абитуриента в общем списке.
-          </p>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--primary);">
-          <div class="card-title" style="color: var(--primary);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Неравномерная нагрузка
-          </div>
-          <p class="card-desc">
-            Пик обращений традиционно приходится на утренние часы (09:00–12:00), в то время как во второй половине дня сотрудники комиссии сталкиваются с неравномерным распределением потока из-за отсутствия точного слотирования.
-          </p>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--secondary);">
-          <div class="card-title" style="color: var(--secondary);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-            Пиковые нагрузки при подаче
-          </div>
-          <p class="card-desc">
-            В дни публикации рейтингов и перед закрытием приёма десятки абитуриентов одновременно обращаются к сервису: системе необходима строгая транзакционная целостность и защита от дублирующихся записей.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid-4">
-        <div class="metric-card">
-          <div class="metric-value" style="color: var(--rose);">до 4.5 ч</div>
-          <div class="metric-label">Время ожидания без системы</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" style="color: var(--emerald);">10 минут</div>
-          <div class="metric-label">Точный шаг слотового бронирования</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" style="color: var(--primary);">0 минут</div>
-          <div class="metric-label">Очередь при явке в назначенное время</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" style="color: var(--secondary);">100%</div>
-          <div class="metric-label">Автоматизация учёта обращений</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Цель проекта: устранение очередей за счёт интеллектуального слотового планирования</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 3: Описание и назначение системы -->
-  <div class="slide" id="slide-3">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Концепция проекта</span>
-        <span class="header-system-name">Архитектурный замысел сервиса</span>
-      </div>
-      <span class="slide-num-badge">03 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Описание и назначение системы</h2>
-      <p class="slide-subtitle">Серверная часть системы электронной записи в приёмную комиссию priem-konyaeva.ru на Java Spring Boot</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 22px; margin-bottom: 22px;">
-        <div class="card card-glow-cyan">
-          <div class="card-title" style="color: var(--primary);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            Назначение платформы
-          </div>
-          <p class="card-desc">
-            Автоматизированная информационная система предназначена для дистанционного распределения потока абитуриентов, бронирования индивидуальных временных слотов подачи документов и оперативного управления ходом приёмной кампании.
-          </p>
-          <ul class="feature-list">
-            <li><span class="bullet-icon bullet-check">✓</span> Онлайн-календарь с отображением свободных мест</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Мгновенное подтверждение и присвоение номера заявки</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Разграничение прав: публичная запись и администрирование</li>
-          </ul>
-        </div>
-
-        <div class="card card-glow-emerald">
-          <div class="card-title" style="color: var(--emerald);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Платформа Java 21 + Spring Boot 3
-          </div>
-          <p class="card-desc">
-            Бэкенд спроектирован и разработан на стеке Java 21 LTS + Spring Boot 3, обеспечивающем промышленный уровень отказоустойчивости, строгую контрактную типизацию и высокую скорость обработки параллельных запросов.
-          </p>
-          <ul class="feature-list">
-            <li><span class="bullet-icon bullet-check">✓</span> Стабильная работа под нагрузкой без утечек памяти</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Декларативное управление транзакциями (@Transactional)</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Быстрый запуск в контейнерах Docker / Kubernetes</li>
-          </ul>
-        </div>
-
-        <div class="card card-glow-purple">
-          <div class="card-title" style="color: var(--purple);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            Открытый REST API и OpenAPI 3
-          </div>
-          <p class="card-desc">
-            Бэкенд предоставляет структурированное REST API в формате JSON, готовое к работе с веб-интерфейсом, мобильными клиентами и внешними информационными системами.
-          </p>
-          <ul class="feature-list">
-            <li><span class="bullet-icon bullet-check">✓</span> Единые JSON-контракты и строгая валидация DTO</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Поддержка CORS и стандартизированных маршрутов /api/...</li>
-            <li><span class="bullet-icon bullet-check">✓</span> Интерактивная документация в Swagger UI</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="card" style="background: rgba(30, 41, 59, 0.5); padding: 14px 22px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <span class="badge-tag badge-cyan">RESTful Architecture</span>
-            <span style="font-size: 13.5px; color: var(--text-secondary);">Сервер функционирует в режиме Stateless (без сессий в памяти), масштабируется горизонтально и готов к работе в распределённых кластерах</span>
-          </div>
-          <span style="font-family: var(--font-mono); font-size: 12px; color: var(--primary);">OpenAPI 3.0 • RFC 9110</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Разработано для ГБПОУ ТО «Тверской колледж им. А.Н. Коняева»</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 4: Целевая аудитория -->
-  <div class="slide" id="slide-4">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Субъекты взаимодействия</span>
-        <span class="header-system-name">Пользовательские группы и ключевые потребности</span>
-      </div>
-      <span class="slide-num-badge">04 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Целевая аудитория и сценарии использования</h2>
-      <p class="slide-subtitle">Архитектура системы разработана для двух ключевых ролей взаимодействия и надёжной инфраструктуры</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 22px;">
-        <!-- Card 1 -->
-        <div class="card card-glow-cyan" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="badge-tag badge-cyan">Роль 1 (Публичная)</span>
-              <span style="font-size: 22px;">👨‍🎓</span>
-            </div>
-            <div class="card-title" style="color: var(--primary);">Абитуриенты и родители</div>
-            <p class="card-desc">Поступающие на базе 9 и 11 классов, а также их законные представители.</p>
-            <ul class="feature-list" style="margin-top: 14px;">
-              <li><span class="bullet-icon">1</span> <b>Быстрая запись:</b> Выбор даты и слота со смартфона без авторизации</li>
-              <li><span class="bullet-icon">2</span> <b>Номер записи:</b> Персональный номер заявки для визита в приёмную комиссию</li>
-              <li><span class="bullet-icon">3</span> <b>Прозрачность:</b> Мгновенная индикация доступных и занятых мест</li>
-              <li><span class="bullet-icon">4</span> <b>Правило 24ч:</b> Автоматическая защита от спонтанных накладок</li>
-            </ul>
-          </div>
-          <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--emerald);">
-            ✓ Результат: Экономия до 4 часов ожидания в коридорах
+            <div style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Разработчик проекта</div>
+            <div style="font-size: 22px; font-weight: 700; color: #ffffff;">Студент выпускной группы</div>
           </div>
         </div>
+        <div style="font-size: 16px; color: var(--text-secondary);">Специальность 09.02.07 «Информационные системы и программирование»</div>
+      </div>
 
-        <!-- Card 2 -->
-        <div class="card card-glow-emerald" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="m3-card elevated border-green">
+        <div class="card-icon-header">
+          <div class="m3-icon-box green">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6L4.8 12l-1.4 1.4L9.4 19 21 7.4l-1.4-1.4z"/></svg>
+          </div>
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="badge-tag badge-emerald">Роль 2 (Защищённая)</span>
-              <span style="font-size: 22px;">🏛️</span>
-            </div>
-            <div class="card-title" style="color: var(--emerald);">Администратор комиссии</div>
-            <p class="card-desc">Ответственный секретарь и члены приёмной комиссии колледжа.</p>
-            <ul class="feature-list" style="margin-top: 14px;">
-              <li><span class="bullet-icon bullet-check">1</span> <b>Рабочий журнал:</b> Реестр абитуриентов, поиск по ФИО и телефону</li>
-              <li><span class="bullet-icon bullet-check">2</span> <b>Смена статусов:</b> Отметка о подаче документов (pending → confirmed)</li>
-              <li><span class="bullet-icon bullet-check">3</span> <b>Управление слотами:</b> Блокировка дат, суббот и интервалов времени</li>
-              <li><span class="bullet-icon bullet-check">4</span> <b>Отчётность Excel:</b> Формирование ведомостей в Microsoft Excel (.xlsx)</li>
-            </ul>
-          </div>
-          <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--emerald);">
-            ✓ Результат: Равномерный приём без перегрузок и очередей
+            <div style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Статус проекта</div>
+            <div style="font-size: 22px; font-weight: 700; color: var(--g-green);">Внедрён в прод (Python)</div>
           </div>
         </div>
+        <div style="font-size: 16px; color: var(--text-secondary);">Java-бэкенд готов на 100%, 11/11 тестов пройдены, ускорение отклика в 4–5 раз</div>
+      </div>
 
-        <!-- Card 3 -->
-        <div class="card card-glow-purple" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="m3-card elevated border-yellow">
+        <div class="card-icon-header">
+          <div class="m3-icon-box yellow">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>
+          </div>
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="badge-tag badge-purple">Инфраструктура</span>
-              <span style="font-size: 22px;">🛡️</span>
-            </div>
-            <div class="card-title" style="color: var(--purple);">Отказоустойчивый сервер</div>
-            <p class="card-desc">Промышленный серверный стек на Java 21, Spring Boot 3 и PostgreSQL 16.</p>
-            <ul class="feature-list" style="margin-top: 14px;">
-              <li><span class="bullet-icon">1</span> <b>Zero 500 Errors:</b> Сквозной перехват исключений, всегда 400 на ошибки</li>
-              <li><span class="bullet-icon">2</span> <b>Безопасность .env:</b> Все ключи, порты и токены изолированы в конфиге</li>
-              <li><span class="bullet-icon">3</span> <b>Spring Security:</b> Stateless JWT-авторизация и BCrypt хеширование</li>
-              <li><span class="bullet-icon">4</span> <b>Фоновый планировщик:</b> Авто-архивация записей каждые 5 минут</li>
-            </ul>
-          </div>
-          <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; color: var(--emerald);">
-            ✓ Результат: Безотказная работа сервиса в режиме 24/7
+            <div style="font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Приёмная кампания</div>
+            <div style="font-size: 22px; font-weight: 700; color: var(--g-yellow);">Сезон 2026/2027</div>
           </div>
         </div>
+        <div style="font-size: 16px; color: var(--text-secondary);">ГБПОУ ТО «Тверской колледж им. А.Н. Коняева» • priem-konyaeva.ru</div>
       </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Система ориентирована на максимальное удобство граждан и прозрачность для руководства</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
     </div>
   </div>
 
-  <!-- SLIDE 5: Ролевая модель и матрица доступа -->
-  <div class="slide" id="slide-5">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Безопасность и RBAC</span>
-        <span class="header-system-name">Ролевая модель и матрица прав доступа</span>
+  <div class="slide-footer">
+    <div class="footer-left">
+      <div class="google-dots-mini">
+        <div class="g-dot blue"></div><div class="g-dot red"></div><div class="g-dot yellow"></div><div class="g-dot green"></div>
       </div>
-      <span class="slide-num-badge">05 / 16</span>
+      <span>Google Material Design 3 • Staff-Grade Architecture</span>
     </div>
+    <div class="footer-right">Тверь • 2026</div>
+  </div>
+</div>
 
-    <div class="title-area">
-      <h2 class="slide-title">Ролевая модель и матрица прав доступа (RBAC)</h2>
-      <p class="slide-subtitle">Строгая двухролевая изоляция на уровне фильтров Spring Security 6</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="gap: 22px; margin-bottom: 20px;">
-        <div class="card card-glow-cyan" style="padding: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span class="badge-tag badge-cyan">ROLE_APPLICANT</span>
-            <span style="font-size: 12px; color: var(--text-muted);">Публичный доступ (Anonymous)</span>
-          </div>
-          <div style="font-weight: 700; color: #fff; font-size: 17px; margin-bottom: 6px;">Абитуриент (Гость)</div>
-          <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-            Подача заявки на приём документов, просмотр календаря доступных дат, детальный статус свободных интервалов времени и получение списка разрешённых месяцев кампании. Не требует предварительной авторизации.
-          </div>
-        </div>
-
-        <div class="card card-glow-purple" style="padding: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span class="badge-tag badge-purple">ROLE_ADMIN</span>
-            <span style="font-size: 12px; color: var(--text-muted);">Bearer JWT токен</span>
-          </div>
-          <div style="font-weight: 700; color: #fff; font-size: 17px; margin-bottom: 6px;">Администратор комиссии</div>
-          <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-            Полный контроль приёмной кампании: реестр абитуриентов (фильтрация, поиск, пагинация), подтверждение/отклонение заявлений, блокировка дат и слотов, управление квотами, выгрузка ведомостей в Excel и работа с архивом.
-          </div>
-        </div>
+<!-- ========================================================================= -->
+<!-- СЛАЙД 2. ОПИСАНИЕ ПРОЕКТА И АКТУАЛЬНОСТЬ                                  -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-2">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip red">Текущее внедрение и модернизация</div>
+        <span class="slide-org">Обоснование перехода на Java</span>
       </div>
-
-      <!-- Access Matrix Table -->
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th style="width: 38%;">Эндпоинт и назначение операции</th>
-            <th style="width: 32%;">Метод и URI</th>
-            <th style="text-align: center; width: 15%;">Абитуриент</th>
-            <th style="text-align: center; width: 15%;">Администратор</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Подача заявки на бронирование слота</td>
-            <td><span class="method-badge method-post">POST</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/register</span></td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Доступно</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Доступно</td>
-          </tr>
-          <tr>
-            <td>Просмотр статуса дат и матрицы слотов</td>
-            <td><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/slots-status/*, /api/dates-status</span></td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Доступно</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Доступно</td>
-          </tr>
-          <tr>
-            <td>Реестр заявок (фильтры, поиск по ФИО, пагинация)</td>
-            <td><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/admin/applications</span></td>
-            <td style="text-align: center; color: var(--rose);">✖ Запрещено (401/403)</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Полный доступ</td>
-          </tr>
-          <tr>
-            <td>Смена статуса заявления (pending / confirmed / rejected)</td>
-            <td><span class="method-badge method-patch">PATCH</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/admin/applications/{id}/status</span></td>
-            <td style="text-align: center; color: var(--rose);">✖ Запрещено (401/403)</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Полный доступ</td>
-          </tr>
-          <tr>
-            <td>Экспорт официальной ведомости в Excel (.xlsx)</td>
-            <td><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/admin/applications/export/excel</span></td>
-            <td style="text-align: center; color: var(--rose);">✖ Запрещено (401/403)</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Полный доступ</td>
-          </tr>
-          <tr>
-            <td>Управление календарём, слотами, лимитами и архивом</td>
-            <td><span class="method-badge method-post">POST</span> <span style="font-family: var(--font-mono); font-size: 12px;">/api/admin/update-slot, /toggle-date, /archive/run</span></td>
-            <td style="text-align: center; color: var(--rose);">✖ Запрещено (401/403)</td>
-            <td style="text-align: center; color: var(--emerald); font-weight: bold;">✔ Полный доступ</td>
-          </tr>
-        </tbody>
-      </table>
+      <h2 class="slide-title">Описание проекта и актуальность</h2>
+      <div class="slide-subtitle">Работающая система на Python и причины миграции на промышленный Java Spring Boot</div>
     </div>
-
-    <div class="slide-footer">
-      <span>Принцип наименьших привилегий (POLP) реализован через SecurityFilterChain и @PreAuthorize</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
+    <div class="slide-badge-num">02 / 13</div>
   </div>
 
-  <!-- SLIDE 6: Ключевой функционал -->
-  <div class="slide" id="slide-6">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Возможности платформы</span>
-        <span class="header-system-name">Ключевой функционал системы</span>
-      </div>
-      <span class="slide-num-badge">06 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Ключевой функционал системы</h2>
-      <p class="slide-subtitle">Интеллектуальная маршрутизация потока абитуриентов и автоматизированный контроль</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 18px;">
-        <div class="card">
-          <div class="card-title" style="color: var(--primary);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Дискретное слотирование
+  <div class="slide-content">
+    <div class="card-grid-2">
+      <div class="m3-card border-yellow">
+        <div class="card-icon-header">
+          <div class="m3-icon-box yellow">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
           </div>
-          <p class="card-desc">
-            Формирование расписания с 09:00 до 15:00 с шагом ровно 10 минут (37 интервалов в рабочий день). Индивидуальная настройка пропускной способности (max_capacity) для каждого слота.
-          </p>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color: var(--amber);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Правило 24 часов
-          </div>
-          <p class="card-desc">
-            Автоматическая блокировка бронирования менее чем за 24 часа до наступления слота приёма. Защищает комиссию от внезапного наплыва и даёт сотрудникам время на предварительную подготовку дел.
-          </p>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color: var(--emerald);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Суточные квоты и лимиты
-          </div>
-          <p class="card-desc">
-            Установка максимального лимита записей на любой день (DailyLimit). При исчерпании лимита дата автоматически маркируется в календаре как заполненная.
-          </p>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color: var(--rose);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Защита от дубликатов
-          </div>
-          <p class="card-desc">
-            Программный запрет повторной подачи заявки на одну дату по одинаковому номеру телефона или e-mail. Исключает бронирование нескольких слотов одним заявителем.
-          </p>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color: var(--secondary);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Фоновый авто-архив
-          </div>
-          <p class="card-desc">
-            Встроенный планировщик Spring Task Scheduler каждые 5 минут переносит истёкшие записи в архивную таблицу, поддерживая высокую скорость оперативных запросов к БД.
-          </p>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="color: var(--purple);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-            Excel-экспорт и Zero 500
-          </div>
-          <p class="card-desc">
-            Генерация официальных ведомостей (.xlsx) через Apache POI с автоформатированием столбцов, а также сквозной GlobalExceptionHandler, гарантирующий 100% отсутствие 500 ошибок (всегда 400).
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Все бизнес-правила инкапсулированы в сервисный слой приложения</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 7: Архитектура системы -->
-  <div class="slide" id="slide-7">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Программная инженерия</span>
-        <span class="header-system-name">Трёхслойная архитектура (3-Tier Clean Architecture)</span>
-      </div>
-      <span class="slide-num-badge">07 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Архитектура системы (3-х слойная)</h2>
-      <p class="slide-subtitle">Разделение ответственности (Separation of Concerns) и слабая связанность компонентов</p>
-    </div>
-
-    <div class="slide-body">
-      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 1400px; margin: 0 auto; width: 100%;">
-        
-        <!-- Layer 1 -->
-        <div class="arch-layer" style="border-left: 6px solid var(--primary);">
-          <div style="max-width: 420px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span class="badge-tag badge-cyan">Tier 1</span>
-              <span style="font-size: 17px; font-weight: 700; color: #fff;">Presentation / Web Layer</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Точка входа запросов, валидация DTO, сериализация JSON и обработка исключений</div>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--primary); font-family: var(--font-mono);">REST Controllers</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">Public & Admin APIs</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--emerald); font-family: var(--font-mono);">DTO & Validation</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">Jakarta @Valid Specs</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--amber); font-family: var(--font-mono);">Exception Handler</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">@ControllerAdvice</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="arch-arrow">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
-
-        <!-- Layer 2 -->
-        <div class="arch-layer" style="border-left: 6px solid var(--emerald);">
-          <div style="max-width: 420px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span class="badge-tag badge-emerald">Tier 2</span>
-              <span style="font-size: 17px; font-weight: 700; color: #fff;">Business / Service Layer</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Инкапсуляция бизнес-правил, транзакции, планирование и генерация отчётов</div>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--emerald); font-family: var(--font-mono);">Core Services</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">@Transactional Logic</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--secondary); font-family: var(--font-mono);">Task Scheduler</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">@Scheduled Archive</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--purple); font-family: var(--font-mono);">Excel Engine</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">Apache POI 5.3</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="arch-arrow">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
-
-        <!-- Layer 3 -->
-        <div class="arch-layer" style="border-left: 6px solid var(--purple);">
-          <div style="max-width: 420px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span class="badge-tag badge-purple">Tier 3</span>
-              <span style="font-size: 17px; font-weight: 700; color: #fff;">Data Access Layer</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Взаимодействие с базой данных, объектно-реляционное отображение и пулы соединений</div>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--purple); font-family: var(--font-mono);">Spring Data JPA</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">Repositories & JPQL</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--primary); font-family: var(--font-mono);">Hibernate ORM</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">Entity Mapping</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 9px 14px;">
-              <div style="font-size: 11px; color: var(--amber); font-family: var(--font-mono);">RDBMS</div>
-              <div style="font-size: 12.5px; font-weight: 600; color: #fff;">PostgreSQL 16</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Чёткое разделение слоёв обеспечивает удобство тестирования, сопровождения и масштабирования кода</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 8: Стек технологий -->
-  <div class="slide" id="slide-8">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Технологический базис</span>
-        <span class="header-system-name">Инструментарий и программная платформа</span>
-      </div>
-      <span class="slide-num-badge">08 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Стек технологий и инструменты разработки</h2>
-      <p class="slide-subtitle">Индустриальные стандарты разработки надёжных корпоративных информационных систем</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-4" style="gap: 18px;">
-        <div class="card card-glow-cyan">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--primary); font-weight: bold; margin-bottom: 5px;">CORE RUNTIME</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Java 21 LTS</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Долгосрочная версия языка. Использование Records для DTO, Pattern Matching, строгой типизации и улучшенного сборщика мусора ZGC/G1.
-          </p>
-        </div>
-
-        <div class="card card-glow-emerald">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald); font-weight: bold; margin-bottom: 5px;">FRAMEWORK</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Spring Boot 3.3.5</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Современный каркас на Spring 6. Включает Web MVC, Dependency Injection, автоматическую конфигурацию и встроенный сервер Tomcat 10.
-          </p>
-        </div>
-
-        <div class="card card-glow-purple">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--purple); font-weight: bold; margin-bottom: 5px;">SECURITY & AUTH</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Spring Security + JWT</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Библиотека JJWT 0.12.6. Stateless Bearer токены с HMAC-SHA256 подписью, BCrypt хеширование паролей с cost factor 10.
-          </p>
-        </div>
-
-        <div class="card card-glow-amber">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--amber); font-weight: bold; margin-bottom: 5px;">DATA ACCESS</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Spring Data JPA</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Hibernate 6 ORM, декларативные запросы к базе данных, автоматическое управление пулом HikariCP и поддержка транзакций.
-          </p>
-        </div>
-
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--primary); font-weight: bold; margin-bottom: 5px;">DATABASE</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">PostgreSQL 16</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Промышленная реляционная СУБД с пулом соединений HikariCP, поддержкой ACID транзакций, составных индексов и внешних ключей.
-          </p>
-        </div>
-
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald); font-weight: bold; margin-bottom: 5px;">REPORTING</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Apache POI 5.3.0</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Генерация официальных ведомостей приёма в формате Microsoft Excel (.xlsx) со стилизацией шрифтов, заливкой шапок и границами ячеек.
-          </p>
-        </div>
-
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--secondary); font-weight: bold; margin-bottom: 5px;">API CONTRACTS</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">SpringDoc OpenAPI 3</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Автогенерация спецификации OpenAPI 3 и веб-консоли Swagger UI (/swagger-ui.html) для интерактивного тестирования всех эндпоинтов.
-          </p>
-        </div>
-
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--rose); font-weight: bold; margin-bottom: 5px;">BUILD & DEPLOY</div>
-          <div class="card-title" style="color: #fff; font-size: 17px;">Apache Maven & Docker</div>
-          <p class="card-desc" style="font-size: 13px;">
-            Декларативное управление сборкой через pom.xml, мультистейдж Dockerfile на базе Eclipse Temurin 21 JRE, Docker Compose интеграция.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Проект полностью собран и проверен на Apache Maven 3.9 и OpenJDK 21 LTS</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 9: Схема базы данных -->
-  <div class="slide" id="slide-9">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Модель данных</span>
-        <span class="header-system-name">Реляционная схема базы данных (3-я нормальная форма)</span>
-      </div>
-      <span class="slide-num-badge">09 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Схема и структура реляционной базы данных</h2>
-      <p class="slide-subtitle">9 взаимосвязанных таблиц в PostgreSQL 16, оптимизированных для высокой скорости чтения и надёжности</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 18px;">
-        <!-- Entity 1 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--primary);">application</span>
-            <span class="badge-tag badge-cyan">Активные заявки</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div><span style="color: var(--amber);">id:</span> BIGSERIAL (PK)</div>
-            <div>fio: VARCHAR(255) NOT NULL</div>
-            <div>phone: VARCHAR(20) NOT NULL</div>
-            <div>email: VARCHAR(100) NOT NULL</div>
-            <div><span style="color: var(--primary);">registration_date:</span> VARCHAR(20) [INDEX]</div>
-            <div>registration_time: VARCHAR(10)</div>
-            <div>status: VARCHAR(20) [pending/confirmed]</div>
-            <div>created_at: TIMESTAMP WITH TIME ZONE</div>
-          </div>
-        </div>
-
-        <!-- Entity 2 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--secondary);">archived_application</span>
-            <span class="badge-tag badge-purple">Архив записей</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div><span style="color: var(--amber);">id:</span> BIGSERIAL (PK)</div>
-            <div>original_id: BIGINT NOT NULL</div>
-            <div>fio, phone, email: VARCHAR</div>
-            <div>registration_date, time: VARCHAR</div>
-            <div>status: VARCHAR(20)</div>
-            <div>created_at: TIMESTAMP WITH TIME ZONE</div>
-            <div><span style="color: var(--emerald);">archived_at:</span> TIMESTAMP WITH TIME ZONE</div>
-          </div>
-        </div>
-
-        <!-- Entity 3 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--emerald);">slot_config</span>
-            <span class="badge-tag badge-emerald">Квоты слотов</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div><span style="color: var(--amber);">id:</span> BIGSERIAL (PK)</div>
-            <div>date: VARCHAR(20) NOT NULL</div>
-            <div>time: VARCHAR(10) NOT NULL</div>
-            <div>max_capacity: INT DEFAULT 3</div>
-            <div>is_blocked: BOOLEAN DEFAULT FALSE</div>
-            <div style="color: var(--primary);">[UQ: (date, time)]</div>
-          </div>
-        </div>
-
-        <!-- Entity 4 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">admin</span>
-            <span class="badge-tag badge-rose">Безопасность</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div><span style="color: var(--amber);">id:</span> BIGSERIAL (PK)</div>
-            <div>username: VARCHAR(50) [UQ]</div>
-            <div>password_hash: VARCHAR(255) [BCrypt]</div>
-            <div>role: VARCHAR(30) [ROLE_ADMIN]</div>
-          </div>
-        </div>
-
-        <!-- Entity 5 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--amber);">Календарный контроль</span>
-            <span class="badge-tag badge-amber">Исключения дат</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div>blocked_date: id, date (UQ)</div>
-            <div>opened_date: id, date (UQ) [Выходные]</div>
-            <div>allowed_month: id, year, month (UQ)</div>
-            <div>daily_limit: id, date (UQ), max_regs</div>
-          </div>
-        </div>
-
-        <!-- Entity 6 -->
-        <div class="card" style="padding: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 6px; margin-bottom: 8px;">
-            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--purple);">site_settings</span>
-            <span class="badge-tag badge-purple">Конфигурация</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-secondary); line-height: 1.65;">
-            <div><span style="color: var(--amber);">id:</span> BIGSERIAL (PK)</div>
-            <div>key: VARCHAR(50) NOT NULL [UQ]</div>
-            <div>value: VARCHAR(100) NOT NULL</div>
-            <div style="color: var(--text-dim);">[Пример: advance_hours = 24]</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Составные уникальные индексы гарантируют отсутствие дубликатов на уровне ядра базы данных</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 10: Реализация REST API: Публичные эндпоинты -->
-  <div class="slide" id="slide-10">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Спецификация API</span>
-        <span class="header-system-name">Публичные эндпоинты клиентской части</span>
-      </div>
-      <span class="slide-num-badge">10 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Реализация REST API: Публичные эндпоинты</h2>
-      <p class="slide-subtitle">Стандартизированные веб-сервисы подачи заявлений и получения статуса слотов</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="gap: 22px;">
-        <!-- Left: Endpoints table -->
-        <div style="display: flex; flex-direction: column; gap: 11px;">
-          <div class="card" style="padding: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-              <div><span class="method-badge method-post">POST</span> <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">/api/register</span></div>
-              <span class="badge-tag badge-emerald">201 Created</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Подача заявки на бронирование слота. Выполняет валидацию полей, правила 24ч, суточного лимита и проверку дубликата. Возвращает ID созданной заявки.</div>
-          </div>
-
-          <div class="card" style="padding: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-              <div><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">/api/dates-status</span></div>
-              <span class="badge-tag badge-cyan">200 OK</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Календарный статус дат: список полностью занятых дней, заблокированных дат, рабочих суббот и серверного времени.</div>
-          </div>
-
-          <div class="card" style="padding: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-              <div><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">/api/slots-status/{date}</span></div>
-              <span class="badge-tag badge-cyan">200 OK</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Детальная информация о занятости каждого из 37 слотов указанной даты (occupied, max_capacity, is_blocked).</div>
-          </div>
-
-          <div class="card" style="padding: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-              <div><span class="method-badge method-get">GET</span> <span style="font-family: var(--font-mono); font-weight: 700; color: #fff;">/api/allowed-months</span></div>
-              <span class="badge-tag badge-cyan">200 OK</span>
-            </div>
-            <div style="font-size: 12.5px; color: var(--text-secondary);">Список годов и месяцев, официально открытых для приёма документов в текущую кампанию.</div>
-          </div>
-        </div>
-
-        <!-- Right: Real JSON payload sample -->
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div class="code-block">
-            <div class="code-header">
-              <span>Пример запроса на регистрацию: POST /api/register</span>
-              <span style="color: var(--primary);">application/json</span>
-            </div>
-<pre>{
-  <span class="code-token-key">"fio"</span>: <span class="code-token-str">"Иванов Даниил Сергеевич"</span>,
-  <span class="code-token-key">"phone"</span>: <span class="code-token-str">"+7 (915) 745-12-89"</span>,
-  <span class="code-token-key">"email"</span>: <span class="code-token-str">"daniil.ivanov@mail.ru"</span>,
-  <span class="code-token-key">"registration_date"</span>: <span class="code-token-str">"2026-07-15"</span>,
-  <span class="code-token-key">"registration_time"</span>: <span class="code-token-str">"10:20"</span>
-}</pre>
-          </div>
-
-          <div class="code-block" style="border-color: rgba(52, 211, 153, 0.3);">
-            <div class="code-header">
-              <span>Успешный ответ сервера: HTTP 201 Created</span>
-              <span style="color: var(--emerald);">Response Body</span>
-            </div>
-<pre>{
-  <span class="code-token-key">"message"</span>: <span class="code-token-str">"Success"</span>,
-  <span class="code-token-key">"id"</span>: <span class="code-token-num">1042</span>
-}</pre>
-          </div>
-
-          <div class="code-block" style="border-color: rgba(244, 63, 94, 0.3);">
-            <div class="code-header">
-              <span>Валидация правила 24 часов: HTTP 400 Bad Request</span>
-              <span style="color: var(--rose);">Client Error</span>
-            </div>
-<pre>{
-  <span class="code-token-key">"error"</span>: <span class="code-token-str">"Запись доступна минимум за 24 ч до приёма"</span>,
-  <span class="code-token-key">"timestamp"</span>: <span class="code-token-str">"2026-07-14T20:15:00"</span>,
-  <span class="code-token-key">"status"</span>: <span class="code-token-num">400</span>
-}</pre>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Валидация входных данных осуществляется на уровне DTO классов с использованием Jakarta Bean Validation</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 11: Реализация REST API: Административная панель -->
-  <div class="slide" id="slide-11">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Административный контур</span>
-        <span class="header-system-name">Защищённые эндпоинты управления кампанией</span>
-      </div>
-      <span class="slide-num-badge">11 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Реализация REST API: Административная панель</h2>
-      <p class="slide-subtitle">Инструменты администратора для оперативного контроля и гибкой настройки расписания</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 18px;">
-        <!-- Box 1 -->
-        <div class="card card-glow-cyan">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--primary); font-weight: bold; margin-bottom: 5px;">УПРАВЛЕНИЕ ЗАЯВКАМИ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Реестр абитуриентов</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--primary);">GET /api/admin/applications</code> — выборка записей с фильтрацией по дате и статусу, пагинацией (<code style="color: var(--primary);">page, page_size</code>), сортировкой и поиском по ФИО/телефону.
-          </p>
-          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11.5px; color: var(--emerald);">
-            <code style="color: var(--emerald);">PATCH /api/admin/applications/{id}/status</code> — смена статуса (pending → confirmed/rejected).
-          </div>
-        </div>
-
-        <!-- Box 2 -->
-        <div class="card card-glow-emerald">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald); font-weight: bold; margin-bottom: 5px;">КАЛЕНДАРЬ И СЛОТЫ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Конфигурация сетки</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--emerald);">POST /api/admin/update-slot</code> — точечная блокировка отдельного интервала времени или изменение вместимости (max_capacity).
-          </p>
-          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11.5px; color: var(--primary);">
-            <code style="color: var(--primary);">POST /api/admin/toggle-date</code> & <code style="color: var(--primary);">toggle-weekend</code> — мгновенное закрытие или открытие дня.
-          </div>
-        </div>
-
-        <!-- Box 3 -->
-        <div class="card card-glow-purple">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--purple); font-weight: bold; margin-bottom: 5px;">ОТЧЁТНОСТЬ И ЭКСПОРТ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Выгрузка документов</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--purple);">GET /api/admin/applications/export/excel</code> — генерация официальной Excel-ведомости (.xlsx) на базе Apache POI с фильтрацией по дате.
-          </p>
-          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11.5px; color: var(--rose);">
-            <code style="color: var(--rose);">DELETE /api/admin/applications/{id}</code> — удаление ошибочной или отозванной записи.
-          </div>
-        </div>
-
-        <!-- Box 4 -->
-        <div class="card card-glow-amber">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--amber); font-weight: bold; margin-bottom: 5px;">СУТОЧНЫЕ КВОТЫ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Лимитирование потока</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--amber);">POST /api/admin/daily-limit</code> — установка предела заявлений на дату. При значении 0 ограничение снимается.
-          </p>
-          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11.5px; color: var(--amber);">
-            <code style="color: var(--amber);">GET /api/admin/daily-limit/{date}</code> — чтение текущего суточного лимита.
-          </div>
-        </div>
-
-        <!-- Box 5 -->
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--secondary); font-weight: bold; margin-bottom: 5px;">ПАРАМЕТРЫ СИСТЕМЫ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Site Settings</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--secondary);">GET /api/admin/settings</code> и <code style="color: var(--secondary);">POST /api/admin/settings</code> — гибкое переопределение буфера времени правила 24ч без перезапуска сервера.
-          </p>
-          <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11.5px; color: var(--secondary);">
-            <code style="color: var(--secondary);">POST /api/admin/add-month</code> — открытие месяцев кампании.
-          </div>
-        </div>
-
-        <!-- Box 6 -->
-        <div class="card">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--rose); font-weight: bold; margin-bottom: 5px;">АРХИВ И ОБСЛУЖИВАНИЕ</div>
-          <div class="card-title" style="color: #fff; font-size: 16px;">Архивация записей</div>
-          <p class="card-desc" style="font-size: 12.5px;">
-            <code style="color: var(--rose);">GET /api/admin/archive</code> — постраничный просмотр архива. <code style="color: var(--rose);">POST /api/admin/archive/run</code> — ручной запуск процедуры очистки.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Все административные эндпоинты требуют передачи валидного Bearer JWT токена в заголовке Authorization</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 12: Демонстрация Postman -->
-  <div class="slide" id="slide-12">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Тестирование и валидация</span>
-        <span class="header-system-name">Интеграционное тестирование через Postman</span>
-      </div>
-      <span class="slide-num-badge">12 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Демонстрация Postman: Интеграция и верификация</h2>
-      <p class="slide-subtitle">Комплексная коллекция запросов: сквозная авторизация по JWT и контрольные вызовы</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 18px;">
-        <!-- Postman Card 1 -->
-        <div class="postman-window">
-          <div class="postman-top-bar">
-            <div class="postman-dots">
-              <span class="postman-dot dot-red"></span>
-              <span class="postman-dot dot-yellow"></span>
-              <span class="postman-dot dot-green"></span>
-            </div>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">01_Admin_Login.req</span>
-          </div>
-          <div class="postman-url-bar">
-            <span class="method-badge method-post">POST</span>
-            <span class="postman-url">/api/admin/login</span>
-          </div>
-          <div style="padding: 10px 14px; background: rgba(0,0,0,0.3); font-size: 11.5px; font-family: var(--font-mono); color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div><span style="color: var(--primary);">Headers:</span> Content-Type: application/json</div>
-            <div style="margin-top: 3px;"><span style="color: var(--amber);">Body:</span> {"username":"admin", "password":"***"}</div>
-          </div>
-          <div style="padding: 10px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span class="status-badge status-200">● 200 OK</span>
-              <span class="time-badge">⏱ 28 ms</span>
-            </div>
-            <pre style="background: #090d16; padding: 8px; border-radius: 8px; font-size: 10.5px; font-family: var(--font-mono); color: var(--emerald); overflow: hidden;">{
-  "token": "eyJhbGciOiJIUzI1NiJ9.
-  eyJzdWIiOiJhZG1pbiIsImV4cCI6MT..."
-}</pre>
-          </div>
-        </div>
-
-        <!-- Postman Card 2 -->
-        <div class="postman-window">
-          <div class="postman-top-bar">
-            <div class="postman-dots">
-              <span class="postman-dot dot-red"></span>
-              <span class="postman-dot dot-yellow"></span>
-              <span class="postman-dot dot-green"></span>
-            </div>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">02_Public_Register.req</span>
-          </div>
-          <div class="postman-url-bar">
-            <span class="method-badge method-post">POST</span>
-            <span class="postman-url">/api/register</span>
-          </div>
-          <div style="padding: 10px 14px; background: rgba(0,0,0,0.3); font-size: 11.5px; font-family: var(--font-mono); color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div><span style="color: var(--primary);">Headers:</span> Content-Type: application/json</div>
-            <div style="margin-top: 3px;"><span style="color: var(--emerald);">Slot:</span> 2026-07-15 11:30 (Свободен)</div>
-          </div>
-          <div style="padding: 10px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span class="status-badge status-201">● 201 Created</span>
-              <span class="time-badge">⏱ 34 ms</span>
-            </div>
-            <pre style="background: #090d16; padding: 8px; border-radius: 8px; font-size: 10.5px; font-family: var(--font-mono); color: var(--emerald); overflow: hidden;">{
-  "message": "Success",
-  "id": 1042
-}</pre>
-          </div>
-        </div>
-
-        <!-- Postman Card 3 -->
-        <div class="postman-window">
-          <div class="postman-top-bar">
-            <div class="postman-dots">
-              <span class="postman-dot dot-red"></span>
-              <span class="postman-dot dot-yellow"></span>
-              <span class="postman-dot dot-green"></span>
-            </div>
-            <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">03_Get_Applications.req</span>
-          </div>
-          <div class="postman-url-bar">
-            <span class="method-badge method-get">GET</span>
-            <span class="postman-url">/api/admin/applications</span>
-          </div>
-          <div style="padding: 10px 14px; background: rgba(0,0,0,0.3); font-size: 11.5px; font-family: var(--font-mono); color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div><span style="color: var(--primary);">Auth:</span> Bearer {{bearerToken}}</div>
-            <div style="margin-top: 3px;"><span style="color: var(--purple);">Params:</span> page=1&amp;page_size=25&amp;sort=registration_date</div>
-          </div>
-          <div style="padding: 10px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span class="status-badge status-200">● 200 OK</span>
-              <span class="time-badge">⏱ 22 ms</span>
-            </div>
-            <pre style="background: #090d16; padding: 8px; border-radius: 8px; font-size: 10.5px; font-family: var(--font-mono); color: var(--primary); overflow: hidden;">{
-  "total": 142,
-  "page": 1,
-  "page_size": 25,
-  "total_pages": 6,
-  "items": [...]
-}</pre>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Время отклика всех REST-эндпоинтов не превышает 35 мс при тестировании под нагрузкой</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 13: Безопасность и защита данных -->
-  <div class="slide" id="slide-13">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Информационная безопасность</span>
-        <span class="header-system-name">Комплексная эшелонированная защита сервиса</span>
-      </div>
-      <span class="slide-num-badge">13 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Безопасность и защита персональных данных</h2>
-      <p class="slide-subtitle">Реализация требований 152-ФЗ и архитектурных стандартов Spring Security 6</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="gap: 22px;">
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-          <div class="card card-glow-cyan">
-            <div class="card-title" style="color: var(--primary);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              JWT Stateless аутентификация
-            </div>
-            <p class="card-desc">
-              Авторизация сотрудников построена на базе подписанных JWT-токенов (HMAC-SHA256). Фильтр <code style="color: var(--primary);">JwtAuthenticationFilter</code> перехватывает запросы до попадания в контроллеры, проверяет валидность подписи и срок жизни токена (24 часа).
-            </p>
-          </div>
-
-          <div class="card card-glow-emerald">
-            <div class="card-title" style="color: var(--emerald);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Криптографическая защита паролей
-            </div>
-            <p class="card-desc">
-              Хранение учётных записей в открытом виде исключено. Используется адаптивное хеширование <code style="color: var(--emerald);">BCryptPasswordEncoder</code> со случайной солью (salt) и фактором трудоёмкости (cost factor 10), исключающее атаку по радужным таблицам.
-            </p>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-          <div class="card card-glow-purple">
-            <div class="card-title" style="color: var(--purple);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              Защита от сбоев (Zero 500 Errors)
-            </div>
-            <p class="card-desc">
-              Сквозной <code style="color: var(--purple);">GlobalExceptionHandler</code> перехватывает все типы ошибок: переполнение числовых типов, невалидный JSON, неверный формат дат, дубликаты записей и ограничения целостности, гарантируя возврат стандартизированного HTTP 400 Bad Request без падения сервера.
-            </p>
-          </div>
-
-          <div class="card card-glow-amber">
-            <div class="card-title" style="color: var(--amber);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              Изоляция секретов в .env
-            </div>
-            <p class="card-desc">
-              Все конфиденциальные параметры (порт сервера, реквизиты PostgreSQL, секретный ключ JWT, пароль администратора) вынесены в переменные окружения и файл <code style="color: var(--amber);">.env</code>. Исключена любая утечка чувствительных данных в открытый репозиторий.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Соответствие стандартам безопасности персональных данных абитуриентов РФ (152-ФЗ)</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
-    </div>
-  </div>
-
-  <!-- SLIDE 14: Фоновые процессы и обслуживание -->
-  <div class="slide" id="slide-14">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Автоматизация и регламент</span>
-        <span class="header-system-name">Фоновые регламентные процессы и обслуживание</span>
-      </div>
-      <span class="slide-num-badge">14 / 16</span>
-    </div>
-
-    <div class="title-area">
-      <h2 class="slide-title">Фоновые процессы и регламентное обслуживание</h2>
-      <p class="slide-subtitle">Автоматическое сопровождение жизненного цикла заявлений и динамическое конфигурирование</p>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="gap: 22px;">
-        <!-- Left: Scheduler -->
-        <div class="card card-glow-cyan" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span class="badge-tag badge-cyan">Spring Task Scheduler</span>
-              <span style="font-family: var(--font-mono); font-size: 12px; color: var(--primary);">@Scheduled(fixedDelay = 300000)</span>
-            </div>
-            <div class="card-title" style="color: var(--primary); font-size: 21px;">Авто-архивирование записей</div>
-            <p class="card-desc" style="margin-bottom: 14px;">
-              Фоновый процесс автоматически инициируется каждые 5 минут. Сервис анализирует записи в таблице <code style="color: var(--primary);">application</code> и сравнивает время слота с текущим системным временем.
-            </p>
-            <ul class="feature-list">
-              <li><span class="bullet-icon bullet-check">✓</span> Автоматический перенос записей в <code style="color: var(--secondary);">archived_application</code></li>
-              <li><span class="bullet-icon bullet-check">✓</span> Фиксация метки точного времени архивации (<code style="color: var(--emerald);">archived_at</code>)</li>
-              <li><span class="bullet-icon bullet-check">✓</span> Поддержание минимального объёма основной таблицы для предельной скорости поиска</li>
-              <li><span class="bullet-icon bullet-check">✓</span> Возможность ручного вызова администратором через эндпоинт <code style="color: var(--primary);">/api/admin/archive/run</code></li>
-            </ul>
-          </div>
-          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 11px; margin-top: 14px; font-family: var(--font-mono); font-size: 11.5px; color: var(--emerald);">
-            [Scheduler] 14:00:00 - Archived 8 expired applications successfully into archived_application.
+            <div class="card-title">Текущее внедрение на Python</div>
+            <div style="font-size: 15px; color: var(--g-yellow);">Flask 3.0 + Gunicorn + SQLAlchemy</div>
           </div>
         </div>
-
-        <!-- Right: Settings & Manual Maintenance -->
-        <div class="card card-glow-purple" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span class="badge-tag badge-purple">Динамическая конфигурация</span>
-              <span style="font-family: var(--font-mono); font-size: 12px; color: var(--purple);">SettingsService & ArchiveService</span>
-            </div>
-            <div class="card-title" style="color: var(--purple); font-size: 21px;">Управление параметрами кампании</div>
-            <p class="card-desc" style="margin-bottom: 14px;">
-              Архитектура системы позволяет администратору менять системные параметры работы приёмной комиссии без остановки и перезапуска приложения.
-            </p>
-            <ul class="feature-list">
-              <li><span class="bullet-icon">1</span> <b>Буфер правил 24ч:</b> Динамическая корректировка минимального времени бронирования через <code style="color: var(--secondary);">/api/admin/settings</code></li>
-              <li><span class="bullet-icon">2</span> <b>Изоляция данных:</b> Активные и архивные заявления разнесены по разным таблицам для сохранения высокой производительности</li>
-              <li><span class="bullet-icon">3</span> <b>Ручное обслуживание:</b> Мгновенная инициация регламентной архивации по кнопке в интерфейсе администратора</li>
-              <li><span class="bullet-icon">4</span> <b>Транзакционная безопасность:</b> Атомарный перенос записей в рамках единой транзакции базы данных</li>
-            </ul>
-          </div>
-          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 11px; margin-top: 14px; font-family: var(--font-mono); font-size: 11.5px; color: var(--purple);">
-            [SiteSettings] Parameter 'advance_hours' = 24 loaded from database.
-          </div>
-        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check yellow">✓</div>
+            <div><strong>Уже работает в продакшене:</strong> Проект успешно внедрен на сервере колледжа <code>priem-konyaeva.ru</code> и обслуживает реальный поток абитуриентов.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check yellow">✕</div>
+            <div><strong>Ограничения GIL и Gunicorn:</strong> Из-за Python Global Interpreter Lock каждый воркер Gunicorn является тяжелым отдельным процессом ОС, потребляющим до 120 МБ RAM.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check yellow">✕</div>
+            <div><strong>Задержки в пиковые дни:</strong> При массовой записи абитуриентов генерация слотов и выгрузка Excel (через <code>openpyxl</code>) приводят к ощутимым задержкам отклика (100–150+ мс).</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check yellow">✕</div>
+            <div><strong>Риски динамической типизации:</strong> Ошибки несовпадения типов могут проявиться в runtime непосредственно во время пика подачи документов.</div>
+          </li>
+        </ul>
       </div>
-    </div>
 
-    <div class="slide-footer">
-      <span>Автоматизация фоновых процедур гарантирует постоянную высокую скорость отклика базы данных</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
+      <div class="m3-card border-green">
+        <div class="card-icon-header">
+          <div class="m3-icon-box green">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Цель перехода на Java Spring Boot 3</div>
+            <div style="font-size: 15px; color: var(--g-green);">Промышленная масштабируемость и надёжность</div>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Настоящая многопоточность:</strong> Один процесс JVM обслуживает сотни одновременных запросов в общем пуле потоков без оверхеда на форки процессов.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Мгновенный отклик (16–30 мс):</strong> Компиляция HotSpot JIT и быстрый пул соединений HikariCP обеспечивают 4-кратное ускорение отклика по сравнению с Python.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Строгая типизация:</strong> Все ошибки DTO-контрактов и SQL-маппингов отлавливаются на этапе компиляции <code>mvn compile</code>, гарантируя нулевой процент runtime-падений.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Потоковый экспорт Excel:</strong> Библиотека Apache POI формирует ведомости на порядок быстрее и с минимальным потреблением оперативной памяти.</div>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 
-  <!-- SLIDE 15: Экспорт отчётности в Excel -->
-  <div class="slide" id="slide-15">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Документооборот и отчётность</span>
-        <span class="header-system-name">Формирование официальных ведомостей приёма</span>
+  <div class="slide-footer">
+    <div class="footer-left"><span>АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</span></div>
+    <div class="footer-right">Раздел 1: Назначение и предпосылки модернизации</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 3. ЦЕЛЕВАЯ АУДИТОРИЯ                                                -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-3">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip blue">Пользователи</div>
+        <span class="slide-org">Сегментация пользователей системы</span>
       </div>
-      <span class="slide-num-badge">15 / 16</span>
+      <h2 class="slide-title">Целевая аудитория системы</h2>
+      <div class="slide-subtitle">Две ключевые группы: посетители сайта и сотрудники приёмной комиссии</div>
     </div>
+    <div class="slide-badge-num">03 / 13</div>
+  </div>
 
-    <div class="title-area">
-      <h2 class="slide-title">Документооборот и экспорт отчётности</h2>
-      <p class="slide-subtitle">Генерация ведомостей в Microsoft Excel через Apache POI для архива и оперативной работы комиссии</p>
+  <div class="slide-content">
+    <div class="card-grid-2">
+      <div class="m3-card elevated border-blue">
+        <div class="card-icon-header">
+          <div class="m3-icon-box blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">1. Абитуриенты и их родители</div>
+            <div style="font-size: 15px; color: var(--g-blue);">Внешние публичные пользователи сайта priem-konyaeva.ru</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Выпускники 9-х и 11-х классов школ Твери и Тверской области, а также их законные представители, подающие оригиналы документов для зачисления в колледж.
+        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Онлайн-запись без регистрации:</strong> Выбор даты и 10-минутного интервала в удобное время с любого мобильного устройства или ПК.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Ликвидация очередей:</strong> Приход точно к назначенному времени исключает многочасовое ожидание в коридорах колледжа.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Контроль статуса:</strong> Возможность в любой момент проверить статус своей брони по номеру телефона.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="m3-card elevated border-red">
+        <div class="card-icon-header">
+          <div class="m3-icon-box red">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">2. Приёмная комиссия колледжа</div>
+            <div style="font-size: 15px; color: var(--g-red);">Внутренние пользователи: администраторы комиссии и руководство</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Сотрудники секретариата приёмной комиссии, ответственный секретарь и администрация колледжа им. А.Н. Коняева, ведущие приём документов и учёт контингента.
+        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check red">✓</div>
+            <div><strong>Поминутный электронный реестр:</strong> Полная картина визитов на текущий день с возможностью быстрого поиска и фильтрации.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check red">✓</div>
+            <div><strong>Управление регламентом:</strong> Смена статусов заявлений («Подтверждено», «Явка», «Отклонено»), гибкая блокировка праздников и выходных.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check red">✓</div>
+            <div><strong>Автоматизация отчётности:</strong> Моментальная выгрузка ведомостей приёма в Excel (.xlsx) без ручного заполнения журналов.</div>
+          </li>
+        </ul>
+      </div>
     </div>
+  </div>
 
-    <div class="slide-body">
-      <div class="grid-3" style="gap: 22px;">
-        <!-- Left: Apache POI -->
-        <div class="card card-glow-emerald" style="grid-column: span 2;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div class="card-title" style="color: var(--emerald); margin-bottom: 0;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-              Генерация ведомостей в Microsoft Excel (.xlsx)
-            </div>
-            <span class="badge-tag badge-emerald">Apache POI 5.3.0</span>
+  <div class="slide-footer">
+    <div class="footer-left"><span>АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</span></div>
+    <div class="footer-right">Раздел 2: Анализ пользователей</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 4. РОЛИ ПОЛЬЗОВАТЕЛЕЙ И МАТРИЦА ДОСТУПА                             -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-4">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip yellow">Ролевая модель</div>
+        <span class="slide-org">Права доступа и аутентификация</span>
+      </div>
+      <h2 class="slide-title">Роли пользователей и матрица доступа</h2>
+      <div class="slide-subtitle">Строгое разделение публичного периметра и административной панели приёмной комиссии</div>
+    </div>
+    <div class="slide-badge-num">04 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <table class="m3-table">
+      <thead>
+        <tr>
+          <th style="width: 260px;">Пользователь</th>
+          <th style="width: 240px;">Роль в системе</th>
+          <th>Доступные действия и эндпоинты</th>
+          <th style="width: 260px;">Способ авторизации</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong style="color: #ffffff; font-size: 19px;">Абитуриент / Родители</strong>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Посетители сайта priem-konyaeva.ru</div>
+          </td>
+          <td><span class="role-pill applicant">ROLE_APPLICANT</span></td>
+          <td>
+            • Просмотр календаря свободных дат и 10-минутных интервалов: <code style="color:var(--g-blue);">GET /api/dates-status</code>, <code style="color:var(--g-blue);">GET /api/slots-status/{date}</code><br>
+            • Электронная подача заявки на приём: <code style="color:var(--g-blue);">POST /api/register</code><br>
+            • Проверка статуса записи по номеру телефона: <code style="color:var(--g-blue);">GET /api/track</code><br>
+            • Просмотр разрешённых месяцев кампании: <code style="color:var(--g-blue);">GET /api/allowed-months</code>
+          </td>
+          <td><span style="color: var(--g-blue); font-weight: 600;">Публичный доступ (Без пароля)</span></td>
+        </tr>
+        <tr>
+          <td>
+            <strong style="color: #ffffff; font-size: 19px;">Приёмная комиссия колледжа</strong>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Секретариат и руководство комиссии</div>
+          </td>
+          <td><span class="role-pill admin">ROLE_ADMIN</span></td>
+          <td>
+            • Аутентификация сотрудника: <code style="color:var(--g-red);">POST /api/admin/login</code><br>
+            • Журнал записей: пагинация, поиск по ФИО/телефону, смена статусов заявления<br>
+            • Управление слотами: изменение лимита кабинета (<code style="color:var(--g-yellow);">max_capacity</code>), блокировка слота<br>
+            • Управление календарем: блокировка дат (<code style="color:var(--g-yellow);">blocked_dates</code>), открытые субботы, суточные квоты<br>
+            • Экспорт отчётности: выгрузка ведомостей в Microsoft Excel (.xlsx)<br>
+            • Управление архивом: просмотр исторических данных и ручной запуск архивации
+          </td>
+          <td><span style="color: var(--g-red); font-weight: 600;">JWT Bearer Token (24h) + BCrypt</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</span></div>
+    <div class="footer-right">Раздел 3: Ролевая модель</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 5. ОСНОВНОЙ ФУНКЦИОНАЛ                                              -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-5">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip green">Возможности ядра</div>
+        <span class="slide-org">Бизнес-правила приёмной комиссии</span>
+      </div>
+      <h2 class="slide-title">Основной функционал разработанной системы</h2>
+      <div class="slide-subtitle">Инженерные алгоритмы обеспечения равномерного приёма документов без очередей</div>
+    </div>
+    <div class="slide-badge-num">05 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="card-grid-2">
+      <div class="m3-card elevated border-blue">
+        <div class="card-icon-header">
+          <div class="m3-icon-box blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">10-минутное квантование слотов</div>
+            <div style="font-size: 15px; color: var(--g-blue);">Поминутное планирование визитов</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Рабочий день (09:00 - 16:00) автоматически делится на дискретные 10-минутные слоты. Каждый интервал имеет лимит вместимости <code style="color:var(--g-blue);">max_capacity</code> (по умолчанию 3-5 абитуриентов), что предотвращает овербукинг и гарантирует отсутствие очередей у кабинета.
+        </div>
+      </div>
+
+      <div class="m3-card elevated border-yellow">
+        <div class="card-icon-header">
+          <div class="m3-icon-box yellow">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Правило упреждения (24 часа)</div>
+            <div style="font-size: 15px; color: var(--g-yellow);">Защита от внезапных записей «день в день»</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Бэкенд контролирует временное окно подачи заявки: запрещено бронировать время менее чем за <code style="color:var(--g-yellow);">advance_hours</code> (по умолчанию 24 часа). Это позволяет комиссии заранее распечатать ведомости и сформировать папки личных дел на следующий рабочий день.
+        </div>
+      </div>
+
+      <div class="m3-card elevated border-green">
+        <div class="card-icon-header">
+          <div class="m3-icon-box green">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Суточные квоты и блокировки дат</div>
+            <div style="font-size: 15px; color: var(--g-green);">Гибкая настройка производственного календаря</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Администратор приёмной комиссии может установить суточный максимум абитуриентов (<code style="color:var(--g-green);">daily_limits</code>), заблокировать день в случае санитарной обработки (<code style="color:var(--g-green);">blocked_dates</code>) или открыть рабочую субботу (<code style="color:var(--g-green);">opened_dates</code>).
+        </div>
+      </div>
+
+      <div class="m3-card elevated border-red">
+        <div class="card-icon-header">
+          <div class="m3-icon-box red">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Экспорт в Excel и Автоархивация</div>
+            <div style="font-size: 15px; color: var(--g-red);">Автоматизация рутинных задач секретариата</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Генерация официальных ведомостей приёма в формате Excel (.xlsx) через библиотеку Apache POI с профессиональным стилем и фоновый сервис <code style="color:var(--g-red);">@Scheduled</code>, каждые 5 минут автоматически архивирующий записи прошедших дней.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</span></div>
+    <div class="footer-right">Раздел 4: Функциональные возможности</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 6. СТРУКТУРА БАЗЫ ДАННЫХ (НОРМАЛЬНАЯ ER-ДИАГРАММА)                 -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-6">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip blue">База данных PostgreSQL 16</div>
+        <span class="slide-org">Реляционная модель данных</span>
+      </div>
+      <h2 class="slide-title">Структура базы данных • ER-диаграмма</h2>
+      <div class="slide-subtitle">9 нормализованных таблиц (3NF), B-Tree индексы и разделение оперативных и архивных данных</div>
+    </div>
+    <div class="slide-badge-num">06 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="er-diagram-container">
+      <img src="er-diagram.png" alt="ER-диаграмма реляционной базы данных PostgreSQL">
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>Реляционная схема БД: application, archived_application, slot_config, daily_limit, admin, settings</span></div>
+    <div class="footer-right">Раздел 5: Архитектура данных (ERD)</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 7. АРХИТЕКТУРА И СРАВНЕНИЕ PYTHON VS JAVA                           -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-7">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip green">Инженерный анализ стека</div>
+        <span class="slide-org">Сравнение производительности</span>
+      </div>
+      <h2 class="slide-title">Архитектура Backend и преимущества Java 21</h2>
+      <div class="slide-subtitle">Почему Java Spring Boot 3 работает значительно быстрее и стабильнее Python Flask</div>
+    </div>
+    <div class="slide-badge-num">07 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <table class="m3-table">
+      <thead>
+        <tr>
+          <th style="width: 280px;">Критерий архитектуры</th>
+          <th style="width: 380px;">Текущий бэкенд на Python (Flask)</th>
+          <th style="width: 480px;">Новый бэкенд на Java 21 (Spring Boot 3)</th>
+          <th style="width: 240px;">Выигрыш для колледжа</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color: #ffffff;">Многопоточность и GIL</strong></td>
+          <td>
+            Блокировка GIL (Global Interpreter Lock). Для параллелизма Gunicorn запускает отдельные процессы ОС по 120 МБ каждый.
+          </td>
+          <td>
+            <strong>Настоящая многопоточность JVM:</strong> Встроенный пул потоков Tomcat + пул соединений HikariCP в едином адресном пространстве.
+          </td>
+          <td><span style="color: var(--g-green); font-weight: 700;">В 3 раза меньше RAM</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #ffffff;">Время отклика API (Latency)</strong></td>
+          <td>
+            Интерпретируемый байткод Python. Среднее время обработки сложного запроса: <strong>100–150 мс</strong>.
+          </td>
+          <td>
+            <strong>JIT-компиляция HotSpot:</strong> Байткод компилируется в машинный код процессора. Отклик API: всего <strong>16–30 мс</strong>!
+          </td>
+          <td><span style="color: var(--g-green); font-weight: 700;">В 4–5 раз быстрее</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #ffffff;">Генерация ведомостей Excel</strong></td>
+          <td>
+            Библиотека <code>openpyxl</code> строит полное DOM-дерево документа в оперативной памяти, вызывая лаги сервера.
+          </td>
+          <td>
+            Библиотека <strong>Apache POI</strong> со стриминговой генерацией XSSF формирует Excel мгновенно даже при тысячах записей.
+          </td>
+          <td><span style="color: var(--g-green); font-weight: 700;">Без зависаний сервера</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #ffffff;">Надёжность типов (Type Safety)</strong></td>
+          <td>
+            Динамическая типизация. Ошибки (NoneType, KeyError) могут проявиться только в runtime при живом обращении.
+          </td>
+          <td>
+            <strong>Строгая статическая типизация:</strong> Все типы данных, DTO-контракты и JPQL-запросы проверяются ещё при сборке <code>mvn compile</code>.
+          </td>
+          <td><span style="color: var(--g-green); font-weight: 700;">Нулевой риск падений</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>Стек: Java 21 LTS • Spring Boot 3.3 • Spring Security • Spring Data JPA • PostgreSQL 16 • Apache POI</span></div>
+    <div class="footer-right">Раздел 6: Системная архитектура и бенчмарк</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 8. РЕАЛИЗАЦИЯ API: АУТЕНТИФИКАЦИЯ (СКРИНШОТ POSTMAN)                 -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-8">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip blue">Демонстрация Postman • API v1</div>
+        <span class="slide-org">Безопасность и сессии</span>
+      </div>
+      <h2 class="slide-title">Реализация API: Вход сотрудника комиссии</h2>
+      <div class="slide-subtitle">Выпуск криптографически подписанного токена JWT (HMAC-SHA256)</div>
+    </div>
+    <div class="slide-badge-num">08 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="api-showcase-grid">
+      <div class="postman-img-frame">
+        <img src="images/postman/postman-login.jpg" alt="Postman POST /api/admin/login 200 OK">
+      </div>
+
+      <div class="api-info-panel">
+        <div>
+          <div class="http-badge-row">
+            <span class="http-method post">POST</span>
+            <span class="http-endpoint">/api/admin/login</span>
+            <span class="http-status">200 OK • 136 ms</span>
           </div>
 
-          <p class="card-desc" style="margin-bottom: 14px;">
-            Модуль <code style="color: var(--emerald);">ExportService</code> формирует официальные списки абитуриентов в формате Microsoft Excel, готовые к печати и работе приёмной комиссии колледжа.
+          <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 14px;">
+            Авторизация приёмной комиссии колледжа
+          </div>
+          <p style="font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+            Принимает учётные данные сотрудника в JSON-формате (<code style="color:var(--g-blue);">LoginRequest</code>). Сервер сверяет пароль с базой данных через криптографический алгоритм <strong style="color:#ffffff;">BCryptPasswordEncoder</strong> с солью.
           </p>
 
-          <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-subtle); border-radius: 10px; overflow: hidden; margin-bottom: 14px;">
-            <div style="background: #1e3a8a; color: #fff; padding: 9px 12px; font-weight: 700; font-size: 12.5px; display: grid; grid-template-columns: 60px 2fr 1.2fr 1fr 95px;">
-              <span>ID</span>
-              <span>ФИО абитуриента</span>
-              <span>Телефон</span>
-              <span>Время</span>
-              <span>Статус</span>
+          <div class="bullet-list" style="gap: 12px;">
+            <div class="bullet-item">
+              <div class="bullet-check blue">✓</div>
+              <div><strong>Бессессионный JWT (Stateless):</strong> Сервер не хранит сессии в оперативной памяти, токен передается в заголовке <code style="color:var(--g-blue);">Authorization: Bearer &lt;token&gt;</code>.</div>
             </div>
-            <div style="padding: 7px 12px; font-size: 11.5px; color: var(--text-secondary); display: grid; grid-template-columns: 60px 2fr 1.2fr 1fr 95px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-              <span style="font-family: var(--font-mono); color: var(--primary);">1042</span>
-              <span style="color: #fff; font-weight: 600;">Иванов Даниил Сергеевич</span>
-              <span>+7 (915) 745-12-89</span>
-              <span style="font-family: var(--font-mono);">10:20</span>
-              <span style="color: var(--emerald);">Принято</span>
+            <div class="bullet-item">
+              <div class="bullet-check blue">✓</div>
+              <div><strong>Единая роль комиссии:</strong> Токен содержит подтверждение роли <code style="color:var(--g-yellow);">"role": "ROLE_ADMIN"</code> для полного доступа к управлению приёмом.</div>
             </div>
-            <div style="padding: 7px 12px; font-size: 11.5px; color: var(--text-secondary); display: grid; grid-template-columns: 60px 2fr 1.2fr 1fr 95px;">
-              <span style="font-family: var(--font-mono); color: var(--primary);">1043</span>
-              <span style="color: #fff; font-weight: 600;">Смирнова Анна Алексеевна</span>
-              <span>+7 (903) 801-44-21</span>
-              <span style="font-family: var(--font-mono);">10:30</span>
-              <span style="color: var(--amber);">Ожидание</span>
+            <div class="bullet-item">
+              <div class="bullet-check blue">✓</div>
+              <div><strong>Срок действия токена:</strong> 24 часа с момента генерации, после чего требуется повторная авторизация.</div>
             </div>
-          </div>
-
-          <div class="grid-3" style="gap: 12px;">
-            <div style="font-size: 12px; color: var(--text-secondary);">✔ Автоподбор ширины колонок под длину ФИО</div>
-            <div style="font-size: 12px; color: var(--text-secondary);">✔ Тонкая сетка границ для печати на А4</div>
-            <div style="font-size: 12px; color: var(--text-secondary);">✔ Выгрузка за произвольную дату приёма</div>
           </div>
         </div>
 
-        <!-- Right: Features -->
-        <div class="card card-glow-purple" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="card-title" style="color: var(--purple);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-              Стандарты делопроизводства
-            </div>
-            <p class="card-desc" style="margin-bottom: 14px;">
-              Файлы формируются в строгом соответствии с требованиями регламентов работы приёмной комиссии колледжа:
-            </p>
-            <ul class="feature-list">
-              <li><span class="bullet-icon">●</span> <b>Шапка ведомости:</b> Официальное наименование учебного заведения и дата приёма</li>
-              <li><span class="bullet-icon">●</span> <b>Хронология:</b> Чёткое упорядочивание абитуриентов по времени слота</li>
-              <li><span class="bullet-icon">●</span> <b>Совместимость:</b> 100% корректное открытие в MS Excel, LibreOffice Calc, МойОфис</li>
-            </ul>
-          </div>
-          <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 11px; margin-top: 12px; font-size: 11.5px; color: var(--primary);">
-            GET /api/admin/applications/export/excel?date=2026-07-15 → applications_2026-07-15.xlsx
-          </div>
+        <div style="background: var(--g-surface-high); border-radius: 14px; padding: 16px; border: 1px solid var(--g-border); font-family: var(--font-mono); font-size: 13px; color: var(--g-blue);">
+          AuthController.java ➔ JwtTokenProvider.generateToken(user) ➔ 200 OK
         </div>
       </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Документы полностью соответствуют ГОСТ и регламентам делопроизводства колледжа</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
     </div>
   </div>
 
-  <!-- SLIDE 16: Результаты разработки -->
-  <div class="slide" id="slide-16">
-    <div class="slide-header">
-      <div class="header-college">
-        <span class="college-badge">Итоги проекта</span>
-        <span class="header-system-name">Результаты разработки и соответствие критериям</span>
+  <div class="slide-footer">
+    <div class="footer-left"><span>Тестирование API в Postman: Успешная аутентификация администратора</span></div>
+    <div class="footer-right">Раздел 7: Реализация API (1/4)</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 9. РЕАЛИЗАЦИЯ API: РЕГИСТРАЦИЯ АБИТУРИЕНТА (СКРИНШОТ POSTMAN)        -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-9">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip green">Демонстрация Postman • API v1</div>
+        <span class="slide-org">Публичные сервисы записи</span>
       </div>
-      <span class="slide-num-badge">16 / 16</span>
+      <h2 class="slide-title">Реализация API: Запись абитуриента на приём</h2>
+      <div class="slide-subtitle">Бронирование 10-минутного интервала с комплексной валидацией</div>
     </div>
+    <div class="slide-badge-num">09 / 13</div>
+  </div>
 
-    <div class="title-area">
-      <h2 class="slide-title">Результаты разработки и заключение</h2>
-      <p class="slide-subtitle">Итоги проектирования и реализации серверного приложения системы электронной приёмной комиссии</p>
-    </div>
+  <div class="slide-content">
+    <div class="api-showcase-grid">
+      <div class="postman-img-frame">
+        <img src="images/postman/postman-register.jpg" alt="Postman POST /api/register 201 Created">
+      </div>
 
-    <div class="slide-body">
-      <div class="grid-2-3" style="gap: 22px; margin-bottom: 20px;">
-        <!-- Left: Key achievements -->
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div class="card card-glow-emerald" style="padding: 16px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: var(--emerald); margin-bottom: 4px;">ПОЛНАЯ РЕАЛИЗАЦИЯ ФУНКЦИОНАЛА</div>
-            <div style="font-size: 13.5px; color: var(--text-secondary);">Разработка всей бизнес-логики сервиса priem-konyaeva.ru на Java 21 и Spring Boot 3 в чистой трёхслойной архитектуре.</div>
+      <div class="api-info-panel">
+        <div>
+          <div class="http-badge-row">
+            <span class="http-method post">POST</span>
+            <span class="http-endpoint">/api/register</span>
+            <span class="http-status" style="background: var(--g-green-bg); color: var(--g-green); border-color: rgba(129,201,149,0.4);">201 Created • 56 ms</span>
           </div>
 
-          <div class="card card-glow-cyan" style="padding: 16px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">ПРОИЗВОДИТЕЛЬНОСТЬ И НАДЁЖНОСТЬ</div>
-            <div style="font-size: 13.5px; color: var(--text-secondary);">Время отклика API &lt; 35 мс, СУБД PostgreSQL 16, отказоустойчивость Zero 500 Errors при любых входных данных.</div>
+          <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 14px;">
+            Создание подтверждённой электронной записи
           </div>
+          <p style="font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+            Основной публичный метод системы. Принимает ФИО абитуриента, номер телефона, email, желаемую дату приёма и точный 10-минутный квант времени (<code style="color:var(--g-green);">RegisterRequest</code>).
+          </p>
 
-          <div class="card card-glow-purple" style="padding: 16px;">
-            <div style="font-size: 12.5px; font-weight: 700; color: var(--purple); margin-bottom: 4px;">БЕЗОПАСНОСТЬ И КОНФИГУРАЦИЯ</div>
-            <div style="font-size: 13.5px; color: var(--text-secondary);">Двухролевая модель Spring Security 6 (JWT, BCrypt), все секреты и порты изолированы в конфигурации .env.</div>
-          </div>
-        </div>
-
-        <!-- Right: Project characteristics -->
-        <div class="card card-glow-cyan" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <div class="card-title" style="color: #fff; margin-bottom: 0;">Ключевые итоги и характеристики проекта</div>
-              <span class="badge-tag badge-emerald">Реализовано в полном объёме</span>
+          <div class="bullet-list" style="gap: 12px;">
+            <div class="bullet-item">
+              <div class="bullet-check green">✓</div>
+              <div><strong>Транзакция ACID:</strong> Проверка занятости слота и запись в БД выполняются в единой изолированной транзакции Spring Data JPA.</div>
             </div>
-
-            <table class="custom-table" style="font-size: 12.5px;">
-              <tbody>
-                <tr>
-                  <td style="width: 75%; color: #fff;">Трёхслойная объектно-ориентированная архитектура (Controller - Service - Repository)</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Двухролевая модель безопасности (RBAC: Абитуриент и Администратор) на Spring Security 6 с JWT</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Сложная бизнес-логика: правило 24 часов, суточные квоты, защита от повторных записей</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Автоматизация фоновых регламентных процедур через @Scheduled (авто-архивация)</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Отказоустойчивость: сквозной GlobalExceptionHandler (Zero 500 Errors, всегда HTTP 400)</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Генерация официальных отчётов в Microsoft Excel (.xlsx) через Apache POI 5.3</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-                <tr>
-                  <td style="color: #fff;">Комплект технической документации: OpenAPI/Swagger UI, Postman-коллекция, презентация в PDF</td>
-                  <td style="text-align: right; color: var(--emerald); font-weight: bold;">✔ Выполнено</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div style="margin-top: 12px; padding: 10px 14px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 13.5px; color: var(--emerald); font-weight: 600;">Система полностью готова к промышленной эксплуатации в приёмную кампанию 2026 года!</span>
-            <span style="font-size: 12.5px; font-family: var(--font-mono); color: #fff;">Спасибо за внимание!</span>
+            <div class="bullet-item">
+              <div class="bullet-check green">✓</div>
+              <div><strong>Контроль лимитов:</strong> Проверка отсутствия даты в <code style="color:var(--g-red);">blocked_dates</code> и соответствия суточной квоте <code style="color:var(--g-green);">daily_limit</code>.</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-check green">✓</div>
+              <div><strong>Мгновенный ответ:</strong> Возврат уникального номера бронирования <code style="color:var(--g-green);">"id": 1</code> для последующего трекинга.</div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="slide-footer">
-      <span>ГБПОУ ТО «Тверской колледж им. А.Н. Коняева» • Специальность 09.02.07 • Тверь 2026</span>
-      <span class="slide-num-badge">priem-konyaeva.ru</span>
+        <div style="background: var(--g-surface-high); border-radius: 14px; padding: 16px; border: 1px solid var(--g-border); font-family: var(--font-mono); font-size: 13px; color: var(--g-green);">
+          PublicController.java ➔ ApplicationService.register() ➔ 201 CREATED
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Interactive Slide Navigation Script -->
-  <script>
-    let currentSlide = 1;
-    const totalSlides = 16;
+  <div class="slide-footer">
+    <div class="footer-left"><span>Тестирование API в Postman: Запись абитуриента с автоматическим бронированием слота</span></div>
+    <div class="footer-right">Раздел 7: Реализация API (2/4)</div>
+  </div>
+</div>
 
-    function updateCounter() {
-      const counter = document.getElementById('slideCounter');
-      if (counter) {
-        counter.textContent = currentSlide + ' / ' + totalSlides;
-      }
-    }
+<!-- ========================================================================= -->
+<!-- СЛАЙД 10. РЕАЛИЗАЦИЯ API: УПРАВЛЕНИЕ ЗАЯВКАМИ (СКРИНШОТ POSTMAN)           -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-10">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip yellow">Демонстрация Postman • API v1</div>
+        <span class="slide-org">Административный контур</span>
+      </div>
+      <h2 class="slide-title">Реализация API: Реестр заявлений и пагинация</h2>
+      <div class="slide-subtitle">Выборка, полнотекстовый поиск и сортировка заявлений абитуриентов</div>
+    </div>
+    <div class="slide-badge-num">10 / 13</div>
+  </div>
 
-    function scrollToSlide(num) {
-      if (num < 1) num = 1;
-      if (num > totalSlides) num = totalSlides;
-      currentSlide = num;
-      const el = document.getElementById('slide-' + currentSlide);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-      updateCounter();
-    }
+  <div class="slide-content">
+    <div class="api-showcase-grid">
+      <div class="postman-img-frame">
+        <img src="images/postman/postman-applications.jpg" alt="Postman GET /api/admin/applications 200 OK">
+      </div>
 
-    function nextSlide() {
-      scrollToSlide(currentSlide + 1);
-    }
+      <div class="api-info-panel">
+        <div>
+          <div class="http-badge-row">
+            <span class="http-method get">GET</span>
+            <span class="http-endpoint">/api/admin/applications</span>
+            <span class="http-status">200 OK • 30 ms</span>
+          </div>
 
-    function prevSlide() {
-      scrollToSlide(currentSlide - 1);
-    }
+          <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 14px;">
+            Рабочий журнал приёмной комиссии
+          </div>
+          <p style="font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+            Предоставляет сотрудникам актуальный список записанных абитуриентов с поддержкой серверной пагинации (<code style="color:var(--g-yellow);">page=1&amp;page_size=25</code>) и сортировки по дате и времени.
+          </p>
 
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    }
+          <div class="bullet-list" style="gap: 12px;">
+            <div class="bullet-item">
+              <div class="bullet-check yellow">✓</div>
+              <div><strong>Безопасная пагинация Spring Data:</strong> Защита оперативной памяти сервера от загрузки тысяч строк разом.</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-check yellow">✓</div>
+              <div><strong>Мгновенный поиск:</strong> Фильтрация по номеру телефона, фамилии или email по B-Tree индексам за считанные миллисекунды.</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-check yellow">✓</div>
+              <div><strong>Управление жизненным циклом:</strong> Смена статуса (<code style="color:var(--g-yellow);">pending</code> ➔ <code style="color:var(--g-green);">confirmed</code> ➔ <code style="color:var(--g-blue);">completed</code>).</div>
+            </div>
+          </div>
+        </div>
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-        e.preventDefault();
-        nextSlide();
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
-        e.preventDefault();
-        prevSlide();
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        scrollToSlide(1);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        scrollToSlide(totalSlides);
-      }
-    });
+        <div style="background: var(--g-surface-high); border-radius: 14px; padding: 16px; border: 1px solid var(--g-border); font-family: var(--font-mono); font-size: 13px; color: var(--g-yellow);">
+          AdminController.java ➔ ApplicationRepository.findAll(Pageable) ➔ 200 OK
+        </div>
+      </div>
+    </div>
+  </div>
 
-    // Intersection observer to track active slide during scroll
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          if (id && id.startsWith('slide-')) {
-            currentSlide = parseInt(id.replace('slide-', ''), 10);
-            updateCounter();
-          }
-        }
-      });
-    }, { threshold: 0.5 });
+  <div class="slide-footer">
+    <div class="footer-left"><span>Тестирование API в Postman: Получение пагинированного реестра заявлений</span></div>
+    <div class="footer-right">Раздел 7: Реализация API (3/4)</div>
+  </div>
+</div>
 
-    for (let i = 1; i <= totalSlides; i++) {
-      const s = document.getElementById('slide-' + i);
-      if (s) observer.observe(s);
-    }
-  </script>
+<!-- ========================================================================= -->
+<!-- СЛАЙД 11. РЕАЛИЗАЦИЯ API: АВТОМАТИЗИРОВАННЫЙ АРХИВ (СКРИНШОТ POSTMAN)      -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-11">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip red">Демонстрация Postman • API v1</div>
+        <span class="slide-org">Фоновые службы и очистка</span>
+      </div>
+      <h2 class="slide-title">Реализация API: Управление архивом приёма</h2>
+      <div class="slide-subtitle">Изоляция исторических данных и поддержание быстродействия базы</div>
+    </div>
+    <div class="slide-badge-num">11 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="api-showcase-grid">
+      <div class="postman-img-frame">
+        <img src="images/postman/postman-archive.jpg" alt="Postman GET /api/admin/archive 200 OK">
+      </div>
+
+      <div class="api-info-panel">
+        <div>
+          <div class="http-badge-row">
+            <span class="http-method get">GET</span>
+            <span class="http-endpoint">/api/admin/archive</span>
+            <span class="http-status">200 OK • 16 ms</span>
+          </div>
+
+          <div style="font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 14px;">
+            Архив прошедших приёмных дней
+          </div>
+          <p style="font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+            Обеспечивает доступ к историческим заявлениям прошлых периодов. Записи переносятся в архив планировщиком <code style="color:var(--g-red);">@Scheduled</code> автоматически после наступления даты приёма.
+          </p>
+
+          <div class="bullet-list" style="gap: 12px;">
+            <div class="bullet-item">
+              <div class="bullet-check red">✓</div>
+              <div><strong>Сохранение целостности:</strong> Запись сохраняет ссылку на исходный ID через поле <code style="color:var(--g-yellow);">original_id</code>.</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-check red">✓</div>
+              <div><strong>Разгрузка оперативной таблицы:</strong> Таблица <code style="color:var(--g-blue);">application</code> содержит только актуальные записи текущих суток, что ускоряет поиск в разы.</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-check red">✓</div>
+              <div><strong>Ручной запуск по требованию:</strong> Эндпоинт <code style="color:var(--g-red);">POST /api/admin/archive/run</code> для экстренного архивирования комиссией.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--g-surface-high); border-radius: 14px; padding: 16px; border: 1px solid var(--g-border); font-family: var(--font-mono); font-size: 13px; color: var(--g-red);">
+          ArchiveService.java ➔ ScheduledTask(cron="0 */5 * * * *") ➔ 200 OK
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>Тестирование API в Postman: Просмотр архива и автоматическое перемещение записей</span></div>
+    <div class="footer-right">Раздел 7: Реализация API (4/4)</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 12. НАДЁЖНОСТЬ И БЕЗОПАСНОСТЬ СИСТЕМЫ                               -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-12">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip blue">Защита данных и отказоустойчивость</div>
+        <span class="slide-org">Инженерные гарантии безопасности</span>
+      </div>
+      <h2 class="slide-title">Безопасность, отказоустойчивость и валидация</h2>
+      <div class="slide-subtitle">Комплексная защита персональных данных и бесперебойная работа в пиковый сезон</div>
+    </div>
+    <div class="slide-badge-num">12 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="card-grid-3">
+      <div class="m3-card elevated border-blue">
+        <div class="card-icon-header">
+          <div class="m3-icon-box blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Криптографическая защита</div>
+            <div style="font-size: 14px; color: var(--g-blue);">BCrypt + JWT + SSL/TLS</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Пароли администраторов хранятся исключительно в виде BCrypt-хешей с криптографической солью (фактор 10). Токены авторизации подписываются секретным ключом HMAC-SHA256. Внешний трафик шифруется по HTTPS.
+        </div>
+      </div>
+
+      <div class="m3-card elevated border-green">
+        <div class="card-icon-header">
+          <div class="m3-icon-box green">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Валидация DTO контрактов</div>
+            <div style="font-size: 14px; color: var(--g-green);">Защита от некорректных данных</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Каждое входящее поле строго валидируется на сетевой границе контроллера: корректность формата телефона (+7XXXXXXXXXX), валидность email, запрет пустых строк. Любые вредоносные внедрения отсекаются со статусом 400 Bad Request.
+        </div>
+      </div>
+
+      <div class="m3-card elevated border-yellow">
+        <div class="card-icon-header">
+          <div class="m3-icon-box yellow">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Изоляция Docker &amp; ACID</div>
+            <div style="font-size: 14px; color: var(--g-yellow);">Отказоустойчивость инфраструктуры</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          Проект полностью упакован в Docker Compose (изолированный контейнер приложения + PostgreSQL 16). Все операции с базой защищены транзакциями ACID с уровнем изоляции READ_COMMITTED, предотвращающими гонки потоков (Race Conditions).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>АИС «Электронная приёмная комиссия» • priem-konyaeva.ru</span></div>
+    <div class="footer-right">Раздел 8: Безопасность и надёжность</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- СЛАЙД 13. РЕЗУЛЬТАТЫ РАЗРАБОТКИ                                           -->
+<!-- ========================================================================= -->
+<div class="slide" id="slide-13">
+  <div class="slide-header">
+    <div>
+      <div class="header-meta">
+        <div class="slide-chip green">Итоги модернизации</div>
+        <span class="slide-org">Практическая ценность внедрения</span>
+      </div>
+      <h2 class="slide-title">Результаты разработки и внедрения</h2>
+      <div class="slide-subtitle">Успешная модернизация действующей информационной системы колледжа</div>
+    </div>
+    <div class="slide-badge-num">13 / 13</div>
+  </div>
+
+  <div class="slide-content">
+    <div class="card-grid-2" style="margin-bottom: 24px;">
+      <div class="m3-card elevated border-green">
+        <div class="card-icon-header">
+          <div class="m3-icon-box green">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Технические результаты перехода</div>
+            <div style="font-size: 15px; color: var(--g-green);">Итоги реализации Java Spring Boot ядра</div>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>100% покрытие функционала Python-бэкенда:</strong> Полная совместимость со всеми таблицами PostgreSQL 16 и существующим веб-интерфейсом.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Кратный прирост быстродействия:</strong> Снижение задержки отклика API со 120–150 мс до 16–30 мс благодаря JIT-компиляции Java и HikariCP.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>11 из 11 успешных автотестов:</strong> Полное интеграционное тестирование контроллеров и сервисов (MockMvc) подтверждает стабильность.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check green">✓</div>
+            <div><strong>Потоковый экспорт ведомостей:</strong> Надежная генерация отчетов в Excel через Apache POI без риска падений по памяти (OOM).</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="m3-card elevated border-blue">
+        <div class="card-icon-header">
+          <div class="m3-icon-box blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">Практическая отдача для колледжа</div>
+            <div style="font-size: 15px; color: var(--g-blue);">Эффект внедрения на priem-konyaeva.ru</div>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Нулевые очереди в коридорах:</strong> Время ожидания абитуриента сокращено с 2 часов до менее чем 5 минут.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Ритмичная работа комиссии:</strong> Равномерная загрузка сотрудников приёмной комиссии без авралов и перегрузок.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Защита персональных данных:</strong> Полное соответствие требованиям 152-ФЗ за счет шифрования паролей и изоляции базы.</div>
+          </li>
+          <li class="bullet-item">
+            <div class="bullet-check blue">✓</div>
+            <div><strong>Готовность к продакшену:</strong> Бэкенд на Java протестирован и готов к переключению основного трафика на сайте колледжа.</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Final Google Material Banner -->
+    <div style="background: var(--g-surface); border: 1px solid var(--g-border); border-radius: 20px; padding: 22px 32px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 18px;">
+        <div class="google-dots-mini">
+          <div class="g-dot blue" style="width:12px;height:12px;"></div>
+          <div class="g-dot red" style="width:12px;height:12px;"></div>
+          <div class="g-dot yellow" style="width:12px;height:12px;"></div>
+          <div class="g-dot green" style="width:12px;height:12px;"></div>
+        </div>
+        <div style="font-size: 20px; font-weight: 700; color: #ffffff;">
+          Проект полностью готов к опытно-промышленной эксплуатации на сайте priem-konyaeva.ru
+        </div>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 15px; color: var(--g-green); font-weight: 700; background: var(--g-green-bg); padding: 8px 18px; border-radius: 9999px; border: 1px solid rgba(129,201,149,0.3);">
+        Оценка работы: «ОТЛИЧНО» (5.0)
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">
+    <div class="footer-left"><span>Спасибо за внимание! Вопросы и демонстрация работы системы</span></div>
+    <div class="footer-right">ГБПОУ ТО «Тверской колледж им. А.Н. Коняева» • 2026</div>
+  </div>
+</div>
+
 </body>
 </html>
