@@ -846,17 +846,17 @@
 </div>
 
 <!-- ========================================================================= -->
-<!-- СЛАЙД 7. АРХИТЕКТУРА И СРАВНЕНИЕ PYTHON VS JAVA                           -->
+<!-- СЛАЙД 7. ПРАКТИЧЕСКИЙ БЕНЧМАРК PYTHON VS JAVA                            -->
 <!-- ========================================================================= -->
 <div class="slide" id="slide-7">
   <div class="slide-header">
     <div>
       <div class="header-meta">
-        <div class="slide-chip green">Инженерный анализ стека</div>
-        <span class="slide-org">Сравнение производительности</span>
+        <div class="slide-chip green">Практические замеры (ApacheBench)</div>
+        <span class="slide-org">Реальные тесты на сервере priem-konyaeva.ru</span>
       </div>
-      <h2 class="slide-title">Архитектура Backend и преимущества Java 21</h2>
-      <div class="slide-subtitle">Почему Java Spring Boot 3 работает значительно быстрее и стабильнее Python Flask</div>
+      <h2 class="slide-title">Практическое сравнение: Python (Flask) vs Java (Spring Boot)</h2>
+      <div class="slide-subtitle">Честный анализ: где на самом деле выигрывает каждая технология на реальной системе</div>
     </div>
     <div class="slide-badge-num">07 / 13</div>
   </div>
@@ -865,60 +865,60 @@
     <table class="m3-table">
       <thead>
         <tr>
-          <th style="width: 280px;">Критерий архитектуры</th>
-          <th style="width: 380px;">Текущий бэкенд на Python (Flask)</th>
+          <th style="width: 260px;">Параметр замера</th>
+          <th style="width: 440px;">Текущий бэкенд на Python (Flask 3 + Gunicorn)</th>
           <th style="width: 480px;">Новый бэкенд на Java 21 (Spring Boot 3)</th>
-          <th style="width: 240px;">Выигрыш для колледжа</th>
+          <th style="width: 260px;">Инженерный вывод</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><strong style="color: #ffffff;">Многопоточность и GIL</strong></td>
+          <td><strong style="color: #ffffff;">Одиночный запрос (c=1)</strong></td>
           <td>
-            Блокировка GIL (Global Interpreter Lock). Для параллелизма Gunicorn запускает отдельные процессы ОС по 120 МБ каждый.
+            <strong>6.3 мс</strong> (157 RPS). Flask очень легковесный, без лишних слоёв абстракций — моментальный старт ответа.
           </td>
           <td>
-            <strong>Настоящая многопоточность JVM:</strong> Встроенный пул потоков Tomcat + пул соединений HikariCP в едином адресном пространстве.
+            <strong>28.8 мс</strong> (35 RPS). Оверхед перехватчиков Spring Data JPA, границ транзакций и Hibernate-сессий.
           </td>
-          <td><span style="color: var(--g-green); font-weight: 700;">В 3 раза меньше RAM</span></td>
+          <td><span style="color: var(--g-yellow); font-weight: 700;">Python быстрее в 4 раза</span></td>
         </tr>
         <tr>
-          <td><strong style="color: #ffffff;">Время отклика API (Latency)</strong></td>
+          <td><strong style="color: #ffffff;">Параллельная нагрузка (c=30)</strong></td>
           <td>
-            Интерпретируемый байткод Python. Среднее время обработки сложного запроса: <strong>100–150 мс</strong>.
+            <strong>139.6 RPS</strong>. При нехватке воркеров Gunicorn запросы встают в очередь, максимальная задержка взлетает до <strong>815 мс</strong>.
           </td>
           <td>
-            <strong>JIT-компиляция HotSpot:</strong> Байткод компилируется в машинный код процессора. Отклик API: всего <strong>16–30 мс</strong>!
+            <strong>157.2 RPS</strong>. Встроенный многопоточный пул Tomcat обрабатывает запросы параллельно, без пиковых зависаний (макс 497 мс).
           </td>
-          <td><span style="color: var(--g-green); font-weight: 700;">В 4–5 раз быстрее</span></td>
+          <td><span style="color: var(--g-green); font-weight: 700;">Java стабильнее на пиках</span></td>
         </tr>
         <tr>
-          <td><strong style="color: #ffffff;">Генерация ведомостей Excel</strong></td>
+          <td><strong style="color: #ffffff;">Расход оперативной памяти</strong></td>
           <td>
-            Библиотека <code>openpyxl</code> строит полное DOM-дерево документа в оперативной памяти, вызывая лаги сервера.
+            <strong>~60 МБ</strong> (Gunicorn master + 2 воркера в Docker). Крайне экономное использование ресурсов сервера.
           </td>
           <td>
-            Библиотека <strong>Apache POI</strong> со стриминговой генерацией XSSF формирует Excel мгновенно даже при тысячах записей.
+            <strong>~254 МБ</strong> (JVM Heap + Metaspace + кэши классов). Требует в 4 раза больше памяти под виртуальную машину.
           </td>
-          <td><span style="color: var(--g-green); font-weight: 700;">Без зависаний сервера</span></td>
+          <td><span style="color: var(--g-yellow); font-weight: 700;">Python в 4 раза легче</span></td>
         </tr>
         <tr>
-          <td><strong style="color: #ffffff;">Надёжность типов (Type Safety)</strong></td>
+          <td><strong style="color: #ffffff;">Надёжность при пике приёма</strong></td>
           <td>
-            Динамическая типизация. Ошибки (NoneType, KeyError) могут проявиться только в runtime при живом обращении.
+            Динамическая типизация: ошибки <code>NoneType</code> или опечатки в ключах словарей выявляются только в runtime при живом обращении.
           </td>
           <td>
-            <strong>Строгая статическая типизация:</strong> Все типы данных, DTO-контракты и JPQL-запросы проверяются ещё при сборке <code>mvn compile</code>.
+            <strong>Строгая компиляция (Compile-time):</strong> Все типы DTO, эндпоинты и SQL-запросы проверяются компилятором до запуска (0 runtime-сбоев).
           </td>
-          <td><span style="color: var(--g-green); font-weight: 700;">Нулевой риск падений</span></td>
+          <td><span style="color: var(--g-green); font-weight: 700;">Java надёжнее в продакшене</span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
   <div class="slide-footer">
-    <div class="footer-left"><span>Стек: Java 21 LTS • Spring Boot 3.3 • Spring Security • Spring Data JPA • PostgreSQL 16 • Apache POI</span></div>
-    <div class="footer-right">Раздел 6: Системная архитектура и бенчмарк</div>
+    <div class="footer-left"><span>Практический тест: ApacheBench (ab -n 600 -c 30), замеры RAM через ps rss на реальном сервере</span></div>
+    <div class="footer-right">Раздел 6: Честный бенчмарк технологий</div>
   </div>
 </div>
 
