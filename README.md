@@ -152,14 +152,36 @@ ADMIN_PASSWORD=your_secure_admin_password
 
 ## 7. Инструкция по запуску
 
-### Запуск с помощью Maven:
+### 1. Клонирование репозитория:
+```bash
+# Клонирование через HTTPS
+git clone https://github.com/Ars-hu/konyaev-admissions-backend-java.git
+
+# Переход в директорию проекта
+cd konyaev-admissions-backend-java
+```
+
+### 2. Настройка переменных окружения:
+```bash
+cp .env.example .env
+# При необходимости отредактируйте параметры подключения к базе данных
+```
+
+### 3. Запуск приложения:
+
+#### Вариант А — Запуск с помощью Maven:
 ```bash
 mvn clean spring-boot:run
 ```
 
-### Запуск через Docker Compose (PostgreSQL + Spring Boot):
+#### Вариант Б — Запуск через Docker Compose (PostgreSQL 16 + Spring Boot):
 ```bash
 docker compose up -d --build
+```
+
+#### Запуск интеграционных тестов:
+```bash
+mvn clean test
 ```
 
 ---
